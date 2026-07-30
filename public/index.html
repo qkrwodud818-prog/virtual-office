@@ -13,15 +13,22 @@
     --primary:#3E4C7A; --primary-soft:#DEE3F0;
     --wood:#C97F2E; --sage:#4F7A56; --sage-soft:#DCEADB;
     --skin:#F2C9A0;
-    --jaemin:#378ADD; --daeun:#1D9E75; --seunghyo:#D85A30; --jihye:#7F77DD;
+    --jaemin:#378ADD; --daeun:#1D9E75; --seunghyo:#D85A30; --jihye:#7F77DD; --haneul:#C9832E;
     --display:'Do Hyeon',-apple-system,sans-serif;
     --body:'IBM Plex Sans KR',-apple-system,'Malgun Gothic',sans-serif;
     --mono:'IBM Plex Mono',monospace;
   }
   *{box-sizing:border-box;}
-  body{background:var(--bg); color:var(--ink); font-family:var(--body); max-width:760px; margin:0 auto; padding:28px 18px 80px; line-height:1.6;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); max-width:820px; margin:0 auto; padding:28px 18px 80px; line-height:1.6;}
   h1{font-family:var(--display); font-size:26px; margin:0 0 4px; font-weight:400;}
   p.sub{color:var(--ink-soft); font-size:14px; margin:0 0 22px;}
+
+  /* ── 탭(라이브오피스 / 대시보드) ── */
+  .tabs{display:flex; gap:8px; margin-bottom:14px;}
+  .tabbtn{background:#fff; color:var(--ink-soft); border:1px solid var(--line); font-weight:600;}
+  .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .view{display:none;}
+  .view.active{display:block;}
 
   /* ── 업무 지시 입력 ── */
   .ask{background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:18px;}
@@ -35,45 +42,97 @@
   button:disabled{opacity:.45; cursor:not-allowed;}
   button.ghost{background:#fff; color:var(--primary); border:1px solid var(--primary);}
   button.go{background:var(--sage);}
+  button.small{padding:5px 10px; font-size:12px;}
 
-  /* ── 도트 사무실 ── */
+  /* ── 사무실 ── */
   .office{position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
-  .floor{position:relative; height:210px;}
-  .room{position:absolute; border:1.5px dashed var(--line); border-radius:8px;}
-  .room .tag{position:absolute; top:5px; left:8px; font-size:11px; color:var(--ink-soft); letter-spacing:.02em;}
-  #room-research{left:0; top:0; width:48%; height:100%;}
-  #room-verify{left:49.5%; top:0; width:23%; height:100%;}
-  #room-tray{left:74%; top:0; width:26%; height:46%;}
-  #room-ceo{left:74%; top:48.5%; width:26%; height:51.5%;}
+  .office-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .office-head h2{font-family:var(--display); font-weight:400; font-size:16px; margin:0;}
+  .badge{display:inline-block; min-width:16px; padding:1px 6px; margin-left:6px; border-radius:9px;
+    background:var(--wood); color:#fff; font-size:10px; font-family:var(--mono); text-align:center; vertical-align:2px;}
+
+  .floor{position:relative; height:230px; border-radius:8px; overflow:hidden;
+    background:
+      linear-gradient(#EDE7D8 0 8px, transparent 8px) 0 0/100% 30px,
+      repeating-linear-gradient(90deg, #F3EEE1 0 29px, #ECE5D4 29px 30px);
+    border:1px solid var(--line);
+  }
+  .room{position:absolute; top:8px; bottom:0; border-left:1.5px dashed var(--line);}
+  .room:first-child{border-left:none;}
+  .room .tag{position:absolute; top:6px; left:8px; font-size:11px; font-weight:600; padding:2px 8px 2px 0; letter-spacing:.02em;}
+  #room-research{left:0; width:32%;}
+  #room-research .tag{color:var(--jaemin);}
+  #room-verify{left:33%; width:20%;}
+  #room-verify .tag{color:var(--seunghyo);}
+  #room-lead{left:54%; width:21%;}
+  #room-lead .tag{color:var(--jihye);}
+  #room-content{left:76%; width:24%;}
+  #room-content .tag{color:var(--haneul);}
+
+  .plant{position:absolute; bottom:6px; width:12px; height:12px;}
+  .plant .pot{position:absolute; bottom:0; left:1px; width:10px; height:6px; background:var(--wood); border-radius:2px;}
+  .plant .leaf{position:absolute; bottom:5px; left:0; width:12px; height:12px; background:var(--sage); border-radius:50% 50% 50% 0;}
+  #room-research .plant{right:8px;}
+  #room-verify .plant{right:8px;}
+  #room-lead .plant{right:8px;}
+  #room-content .plant{right:8px;}
+
+  .desk{position:absolute; width:32px; height:14px; margin-left:-16px; background:var(--wood); opacity:.4; border-radius:3px;}
 
   .char{position:absolute; width:34px; margin-left:-17px; text-align:center;
-    transition:left .8s ease, top .8s ease;}
-  .char .head{width:15px; height:15px; border-radius:50%; background:var(--skin); margin:0 auto 2px;}
-  .char .body{width:24px; height:22px; border-radius:6px; margin:0 auto;}
+    transition:left .9s ease, top .9s ease;}
+  .char .head{width:15px; height:15px; border-radius:50%; background:var(--skin); margin:0 auto 2px; position:relative; z-index:2;}
+  .char .body{width:24px; height:22px; border-radius:6px; margin:0 auto; position:relative; z-index:2;}
   .char .nm{font-size:10px; color:var(--ink-soft); margin-top:3px; white-space:nowrap;}
   .char.act .body{box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px currentColor;}
+  @keyframes walkBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
+  .char.walking .head, .char.walking .body{ animation:walkBounce .28s ease-in-out infinite; }
+
+  .bubble{position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:6px;
+    background:#fff; border:1px solid var(--line); border-radius:8px; padding:5px 8px;
+    font-size:10px; line-height:1.35; color:var(--ink); width:max-content; max-width:118px;
+    box-shadow:0 2px 6px rgba(0,0,0,.06); opacity:0; transition:opacity .2s; pointer-events:none; z-index:3;}
+  .bubble:after{content:''; position:absolute; top:100%; left:50%; margin-left:-4px;
+    border:4px solid transparent; border-top-color:#fff;}
+  .char.talk .bubble{opacity:1;}
 
   .log{margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
     font-size:13px; color:var(--ink-soft); min-height:20px;}
   .log b{color:var(--ink); font-weight:600;}
 
   /* ── 직원 현황 ── */
-  .crew{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;}
-  .crew .c{background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 8px; text-align:center;}
-  .crew .c .n{font-size:13px; font-weight:600;}
+  .crew{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:18px;}
+  .crew .c{background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 8px; text-align:center; position:relative;}
+  .crew .c .n{font-size:13px; font-weight:600; display:inline-block;}
+  .crew .c .edit{border:none; background:none; padding:0; margin-left:3px; font-size:11px; color:var(--ink-soft); cursor:pointer; vertical-align:1px;}
   .crew .c .r{font-size:10px; color:var(--ink-soft); margin-bottom:3px;}
   .crew .c .s{font-size:11px; color:var(--ink-soft);}
   .crew .c .s.working{color:var(--wood); font-weight:600;}
   .crew .c .s.done{color:var(--sage);}
 
+  #result:empty{display:none;}
+
+  /* ── 팝업(모달): 자료조사/검증 과정 ── */
+  .modal-overlay{display:none; position:fixed; inset:0; background:rgba(34,31,27,.45); z-index:50;
+    align-items:center; justify-content:center; padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:var(--bg); border-radius:14px; width:100%; max-width:640px; max-height:84vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.18);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); background:#fff;}
+  .panel-title{font-size:12px; font-weight:700; color:var(--ink-soft); letter-spacing:.02em; margin:0;}
+  #feed-wrap{padding:14px; overflow-y:auto; flex:1;}
+
   /* ── 진행 기록 ── */
   .roundbar{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center;
     margin:16px 0 10px; letter-spacing:.04em;}
+  .roundbar:first-child{margin-top:0;}
   .step{background:#fff; border:1px solid var(--line); border-radius:10px; padding:13px 15px; margin-bottom:9px;}
   .step .lb{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:7px; font-size:12px; color:var(--ink-soft);}
   .step .lb .who{font-weight:600; color:var(--ink);}
   .step .lb .mt{font-family:var(--mono); font-size:10px; background:var(--primary-soft); color:var(--primary);
     padding:2px 7px; border-radius:9px; white-space:nowrap;}
+  .step .lb .tm{font-family:var(--mono); font-size:10px; color:var(--ink-soft); white-space:nowrap;}
+  .step.content{border-color:var(--sage);}
   .step .tx{font-size:14px; white-space:pre-wrap;}
   .step .tx h3{font-family:var(--display); font-weight:400; font-size:16px; margin:14px 0 5px;}
   .step .tx h3:first-child{margin-top:0;}
@@ -91,93 +150,195 @@
   .done-note{background:var(--sage-soft); border:1px solid var(--sage); color:#2F4A35;
     border-radius:10px; padding:13px 15px; font-size:14px; margin:12px 0;}
   .err{background:#FBE4E1; color:#8A2E22; border:1px solid #E9BDB5; border-radius:10px; padding:13px 15px; font-size:13px; margin:12px 0;}
+
+  /* ── 대시보드 ── */
+  .stat-cards{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;}
+  @media (max-width:640px){ .stat-cards{grid-template-columns:repeat(2,1fr);} }
+  .stat-cards .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; text-align:center;}
+  .stat-cards .card .v{font-family:var(--display); font-size:22px; color:var(--primary);}
+  .stat-cards .card .l{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .dash-table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  .dash-table th,.dash-table td{padding:10px 12px; font-size:13px; text-align:left; border-bottom:1px solid var(--line);}
+  .dash-table th{background:var(--primary-soft); color:var(--primary); font-weight:600; font-size:12px;}
+  .dash-table tr:last-child td{border-bottom:none;}
+  .dash-table .st{font-size:12px; color:var(--ink-soft);}
+  .dash-table .st.working{color:var(--wood); font-weight:600;}
+  .dash-table .st.done{color:var(--sage);}
 </style>
 </head>
 <body>
 
   <h1>가상오피스</h1>
-  <p class="sub">대표님이 업무를 지시하면 AI 직원 4명이 나눠서 처리하고, 팀장이 검수한 뒤 대표님 승인을 받습니다.</p>
+  <p class="sub">대표님이 업무를 지시하면 AI 직원 5명이 나눠서 처리하고, 팀장이 검수한 뒤 대표님 승인을 받습니다.</p>
 
-  <div class="ask">
-    <label for="q">직원들에게 시킬 업무</label>
-    <textarea id="q" placeholder="예) 반려동물 사료 성분을 사진으로 찍으면 알려주는 앱, 지금 시작해도 될지 시장을 조사해줘"></textarea>
-    <div class="row">
-      <span class="hint" id="hint">보통 2~5분 걸립니다. 창을 닫지 마세요.</span>
-      <button id="btn">업무 지시하기</button>
-    </div>
+  <div class="tabs">
+    <button type="button" class="tabbtn active" data-view="office">라이브오피스</button>
+    <button type="button" class="tabbtn" data-view="dashboard">대시보드</button>
   </div>
 
-  <div class="office">
-    <div class="floor" id="floor">
-      <div class="room" id="room-research"><span class="tag">조사팀</span></div>
-      <div class="room" id="room-verify"><span class="tag">검증팀</span></div>
-      <div class="room" id="room-tray"><span class="tag">제출함</span></div>
-      <div class="room" id="room-ceo"><span class="tag">대표실</span></div>
+  <div class="view active" id="view-office">
+    <div class="ask">
+      <label for="q">직원들에게 시킬 업무</label>
+      <textarea id="q" placeholder="예) 반려동물 사료 성분을 사진으로 찍으면 알려주는 앱, 지금 시작해도 될지 시장을 조사해줘"></textarea>
+      <div class="row">
+        <span class="hint" id="hint">보통 2~5분 걸립니다. 창을 닫지 마세요.</span>
+        <button id="btn">업무 지시하기</button>
+      </div>
     </div>
-    <div class="log" id="log">직원들이 자리에서 대기하고 있습니다.</div>
+
+    <div class="office">
+      <div class="office-head">
+        <h2>사무실</h2>
+        <button type="button" class="ghost small" id="feedOpenBtn">자료조사 과정 보기<span class="badge" id="feedBadge" style="display:none;">0</span></button>
+      </div>
+      <div class="floor" id="floor">
+        <div class="room" id="room-research"><span class="tag">자료조사팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-verify"><span class="tag">검증팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-lead"><span class="tag">팀장실</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-content"><span class="tag">콘텐츠팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+      </div>
+      <div class="log" id="log">직원들이 자리에서 대기하고 있습니다.</div>
+    </div>
+
+    <div class="crew" id="crew"></div>
+
+    <div id="result"></div>
   </div>
 
-  <div class="crew" id="crew"></div>
+  <div class="view" id="view-dashboard">
+    <div class="stat-cards">
+      <div class="card"><div class="v" id="statCompleted">0</div><div class="l">완료된 업무</div></div>
+      <div class="card"><div class="v" id="statResearch">0</div><div class="l">총 자료조사 건수</div></div>
+      <div class="card"><div class="v" id="statRetry">0</div><div class="l">재조사·재작업 횟수</div></div>
+      <div class="card"><div class="v" id="statStart">-</div><div class="l">최근 업무 시작 시각</div></div>
+    </div>
+    <table class="dash-table">
+      <thead><tr><th>이름</th><th>역할</th><th>현재 상태</th><th>마지막 업데이트</th></tr></thead>
+      <tbody id="dashBody"></tbody>
+    </table>
+  </div>
 
-  <div id="out"></div>
+  <div class="modal-overlay" id="feedOverlay">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="panel-title">진행 상황 · 자료조사/검증 과정</div>
+        <button type="button" class="ghost small" id="feedClose">닫기 ✕</button>
+      </div>
+      <div id="feed-wrap"><div id="out"></div></div>
+    </div>
+  </div>
 
 <script>
-/* ────────── 직원 정보 ────────── */
+/* ────────── 이름 변경(로컬 저장) ────────── */
+var NAME_KEY = 'officeNames_v1';
+var customNames = {};
+try { customNames = JSON.parse(localStorage.getItem(NAME_KEY) || '{}') || {}; } catch(e){ customNames = {}; }
+function displayName(orig){ return customNames[orig] || orig; }
+function dn(orig){ return esc(displayName(orig)); }
+function saveCustomName(orig, newName){
+  customNames[orig] = newName;
+  try { localStorage.setItem(NAME_KEY, JSON.stringify(customNames)); } catch(e){}
+}
+
+/* ────────── 직원 정보 (내부 식별용 원래 이름은 그대로 사용, 화면 표시만 바뀜) ────────── */
 var CREW = [
-  { name:'재민',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:14, y:42}, room:'조사팀' },
-  { name:'다은',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:34, y:42}, room:'조사팀' },
-  { name:'승효',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:61, y:42}, room:'검증팀' },
-  { name:'이지혜', role:'팀장',       color:'var(--jihye)',     desk:{x:87, y:70}, room:'대표실' }
+  { name:'재민',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:9,  y:58} },
+  { name:'다은',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:23, y:58} },
+  { name:'승효',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:43, y:58} },
+  { name:'이지혜', role:'팀장',       color:'var(--jihye)',     desk:{x:64, y:58} },
+  { name:'하늘',   role:'콘텐츠 담당', color:'var(--haneul)',   desk:{x:87, y:58} }
 ];
-var TRAY = { x:87, y:18 };
+var HANDOFF = { x:60, y:58 }; // 팀장실 입구 — 결과를 전달하는 지점
 
 var els = {};
 var jobId = null, source = null, backTimers = {};
+var feedUnread = 0, feedOpen = false;
+var currentView = 'office';
+var stats = { completedJobs:0, researchSteps:0, retries:0, lastStart:'-' };
 
 /* ────────── 화면 만들기 ────────── */
 function buildOffice(){
   var floor = document.getElementById('floor');
   var crew = document.getElementById('crew');
   CREW.forEach(function(p){
+    var desk = document.createElement('div');
+    desk.className = 'desk';
+    desk.style.left = p.desk.x + '%';
+    desk.style.top = (p.desk.y + 20) + '%';
+    floor.appendChild(desk);
+
     var c = document.createElement('div');
     c.className = 'char';
     c.style.color = p.color;
     c.style.left = p.desk.x + '%';
     c.style.top = p.desk.y + '%';
-    c.innerHTML = '<div class="head"></div><div class="body" style="background:' + p.color + '"></div>'
-                + '<div class="nm">' + p.name + '</div>';
+    c.innerHTML = '<div class="bubble"></div><div class="head"></div><div class="body" style="background:' + p.color + '"></div>'
+                + '<div class="nm">' + esc(displayName(p.name)) + '</div>';
     floor.appendChild(c);
 
     var card = document.createElement('div');
     card.className = 'c';
-    card.innerHTML = '<div class="r">' + p.role + '</div><div class="n">' + p.name + '</div><div class="s">대기 중</div>';
+    card.innerHTML = '<div class="r">' + p.role + '</div>'
+      + '<div class="n"><span class="nmtext">' + esc(displayName(p.name)) + '</span>'
+      + '<button type="button" class="edit" title="이름 바꾸기" data-orig="' + esc(p.name) + '">✎</button></div>'
+      + '<div class="s">대기 중</div>';
     crew.appendChild(card);
 
-    els[p.name] = { char:c, status:card.querySelector('.s'), info:p };
+    els[p.name] = {
+      char:c, status:card.querySelector('.s'), bubble:c.querySelector('.bubble'),
+      nmSpan:card.querySelector('.nmtext'), charNm:c.querySelector('.nm'), info:p, lastTime:''
+    };
+  });
+
+  crew.querySelectorAll('.edit').forEach(function(btn){
+    btn.onclick = function(){
+      var orig = btn.getAttribute('data-orig');
+      var cur = displayName(orig);
+      var next = window.prompt('직원의 새 이름을 입력해 주세요.\n(화면에 보이는 이름만 바뀌고, 보고서 내용 속 이름은 바뀌지 않습니다)', cur);
+      if(next === null) return;
+      next = next.trim();
+      if(!next) return;
+      saveCustomName(orig, next);
+      var e = els[orig];
+      e.nmSpan.textContent = next;
+      e.charNm.textContent = next;
+    };
   });
 }
 buildOffice();
 
 /* ────────── 캐릭터 상태 ────────── */
-function setState(name, state, text){
+function setState(name, state, text, time){
   var e = els[name];
   if(!e) return;
 
   if(text){
     e.status.textContent = text;
     e.status.className = 's' + (state === 'working' ? ' working' : (state === 'done' ? ' done' : ''));
+    e.bubble.textContent = text;
   }
+  if(time) e.lastTime = time;
+  e.char.classList.toggle('talk', state !== 'idle' && !!text);
 
   clearTimeout(backTimers[name]);
+  e.char.classList.remove('walking');
   if(state === 'submit'){
-    // 제출함으로 걸어가서 결과를 놓고 자리로 돌아온다
+    // 팀장실 입구까지 걸어가서 결과를 전달하고 자리로 돌아온다
     e.char.classList.remove('act');
-    e.char.style.left = TRAY.x + '%';
-    e.char.style.top  = TRAY.y + '%';
+    e.char.classList.add('walking');
+    e.char.style.left = HANDOFF.x + '%';
+    e.char.style.top  = HANDOFF.y + '%';
     backTimers[name] = setTimeout(function(){
-      e.char.style.left = e.info.desk.x + '%';
-      e.char.style.top  = e.info.desk.y + '%';
-    }, 1300);
+      e.char.classList.remove('walking');
+      backTimers[name] = setTimeout(function(){
+        e.char.classList.add('walking');
+        e.char.style.left = e.info.desk.x + '%';
+        e.char.style.top  = e.info.desk.y + '%';
+        backTimers[name] = setTimeout(function(){
+          e.char.classList.remove('walking');
+        }, 900);
+      }, 500);
+    }, 900);
   } else {
     e.char.style.left = e.info.desk.x + '%';
     e.char.style.top  = e.info.desk.y + '%';
@@ -200,20 +361,75 @@ function fmt(text){
   return esc(text)
     .replace(/\r/g, '')
     .replace(/\n{3,}/g, '\n\n')
-    .replace(/^#{1,4}[ \t]*(.+?)[ \t]*$/gm, '<h3>$1</h3>')
+    .replace(/^#{1,4}[ \t]+(.+?)[ \t]*$/gm, '<h3>$1</h3>')
     .replace(/<\/h3>\n+/g, '</h3>')   // 소제목 뒤 빈 줄 정리 (간격은 CSS가 담당)
     .replace(/\n+<h3>/g, '<h3>')
     .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
     .trim();
 }
 
+/* ────────── 탭(라이브오피스 / 대시보드) ────────── */
+document.querySelectorAll('.tabbtn').forEach(function(btn){
+  btn.onclick = function(){
+    currentView = btn.getAttribute('data-view');
+    document.querySelectorAll('.tabbtn').forEach(function(b){ b.classList.toggle('active', b === btn); });
+    document.getElementById('view-office').classList.toggle('active', currentView === 'office');
+    document.getElementById('view-dashboard').classList.toggle('active', currentView === 'dashboard');
+    if(currentView === 'dashboard') renderDashboard();
+  };
+});
+
+function renderDashboard(){
+  document.getElementById('statCompleted').textContent = stats.completedJobs;
+  document.getElementById('statResearch').textContent = stats.researchSteps;
+  document.getElementById('statRetry').textContent = stats.retries;
+  document.getElementById('statStart').textContent = stats.lastStart;
+
+  var body = document.getElementById('dashBody');
+  body.innerHTML = '';
+  CREW.forEach(function(p){
+    var e = els[p.name];
+    var tr = document.createElement('tr');
+    var stCls = e.status.className.replace('s', '').trim();
+    tr.innerHTML =
+      '<td>' + esc(displayName(p.name)) + '</td>' +
+      '<td>' + esc(p.role) + '</td>' +
+      '<td class="st ' + esc(stCls) + '">' + esc(e.status.textContent) + '</td>' +
+      '<td class="st">' + esc(e.lastTime || '-') + '</td>';
+    body.appendChild(tr);
+  });
+}
+renderDashboard();
+
+/* ────────── 팝업(자료조사 과정) 열고 닫기 ────────── */
+var feedOverlay = document.getElementById('feedOverlay');
+var feedBadge = document.getElementById('feedBadge');
+function openFeed(){
+  feedOverlay.classList.add('open');
+  feedOpen = true;
+  feedUnread = 0;
+  feedBadge.style.display = 'none';
+}
+function closeFeed(){
+  feedOverlay.classList.remove('open');
+  feedOpen = false;
+}
+function markUnread(){
+  if(feedOpen) return;
+  feedUnread++;
+  feedBadge.textContent = feedUnread;
+  feedBadge.style.display = 'inline-block';
+}
+document.getElementById('feedOpenBtn').onclick = openFeed;
+document.getElementById('feedClose').onclick = closeFeed;
+feedOverlay.addEventListener('click', function(e){ if(e.target === feedOverlay) closeFeed(); });
+
 /* ────────── 진행 기록 그리기 ────────── */
-function addStep(ev){
-  var out = document.getElementById('out');
-  var div = document.createElement('div');
-  div.className = 'step' + (ev.isReport ? ' report' : '');
-  var html = '<div class="lb"><span class="who">' + esc(ev.agent) + ' — ' + esc(ev.label) + '</span>'
-           + '<span class="mt">' + esc(ev.model) + '</span></div>'
+function stepHTML(ev){
+  var html = '<div class="lb"><span class="who">' + dn(ev.agent) + ' — ' + esc(ev.label) + '</span>'
+           + '<span style="display:flex; gap:6px; align-items:center;">'
+           + (ev.time ? '<span class="tm">' + esc(ev.time) + '</span>' : '')
+           + '<span class="mt">' + esc(ev.model) + '</span></span></div>'
            + '<div class="tx">' + fmt(ev.text) + '</div>';
   if(ev.citations && ev.citations.length){
     var seen = {}, links = [];
@@ -226,9 +442,41 @@ function addStep(ev){
     });
     if(links.length) html += '<div class="cits">확인한 자료 ' + links.length + '건 · ' + links.join(' · ') + '</div>';
   }
-  div.innerHTML = html;
+  return html;
+}
+
+function addStep(ev){
+  if(ev.isContent){
+    // 승인 후 콘텐츠팀 초안은 팝업이 아니라 결재 박스 아래, 메인 화면에 바로 보여준다
+    var result = document.getElementById('result');
+    var card = document.createElement('div');
+    card.className = 'step report content';
+    card.innerHTML = stepHTML(ev);
+    result.appendChild(card);
+    card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    return;
+  }
+  if(/^조사 결과/.test(ev.label || '')) stats.researchSteps++;
+  if(/다시 조사|다시 작업/.test(ev.label || '')) stats.retries++;
+  if(ev.isReport){
+    // 팀장 검수가 끝난 결론만 메인 화면에 보여준다
+    var result = document.getElementById('result');
+    result.innerHTML = '';
+    var card = document.createElement('div');
+    card.className = 'step report';
+    card.innerHTML = stepHTML(ev);
+    result.appendChild(card);
+    result.scrollIntoView({ behavior:'smooth', block:'start' });
+    return;
+  }
+  // 검수 전 자료조사/검증 과정은 팝업 안에만 쌓인다
+  var out = document.getElementById('out');
+  var div = document.createElement('div');
+  div.className = 'step';
+  div.innerHTML = stepHTML(ev);
   out.appendChild(div);
-  div.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  if(feedOpen) div.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  markUnread();
 }
 
 function addBar(text){
@@ -236,6 +484,7 @@ function addBar(text){
   d.className = 'roundbar';
   d.textContent = '── ' + text + ' ──';
   document.getElementById('out').appendChild(d);
+  markUnread();
 }
 
 function addNote(text, cls){
@@ -243,26 +492,27 @@ function addNote(text, cls){
   d.className = cls;
   d.textContent = text;
   document.getElementById('out').appendChild(d);
-  d.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  if(feedOpen) d.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  markUnread();
 }
 
 /* ────────── 대표 승인 화면 ────────── */
 function showApproval(ev){
-  var out = document.getElementById('out');
+  var result = document.getElementById('result');
   var box = document.createElement('div');
   box.className = 'approve';
   box.innerHTML =
     '<h2>대표님 결재가 필요합니다</h2>' +
-    '<p>팀장 이지혜가 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
+    '<p>팀장 ' + dn('이지혜') + '가 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
     (ev.lastRound ? ' (이번이 마지막 보완 기회입니다)' : '') + '</p>' +
     '<textarea placeholder="어떤 점이 부족한지 편하게 적어 주세요. 예) 경쟁사 가격이 빠졌어요"></textarea>' +
     '<div class="btns">' +
       '<button class="go" data-a="approve">승인합니다</button>' +
       '<button class="ghost" data-a="ask">보완 요청하기</button>' +
     '</div>';
-  out.appendChild(box);
-  box.scrollIntoView({ behavior:'smooth', block:'center' });
-  setLog('<b>대표님 결재 대기 중</b> — 승인하시면 업무가 끝납니다.');
+  result.appendChild(box);
+  result.scrollIntoView({ behavior:'smooth', block:'start' });
+  setLog('<b>대표님 결재 대기 중</b> — 아래 결과를 확인해 주세요.');
 
   var ta = box.querySelector('textarea');
   var btns = box.querySelectorAll('button');
@@ -317,6 +567,9 @@ btn.onclick = function(){
   btn.disabled = true;
   btn.textContent = '진행 중…';
   document.getElementById('out').innerHTML = '';
+  document.getElementById('result').innerHTML = '';
+  feedUnread = 0;
+  feedBadge.style.display = 'none';
   resetCrew();
   setLog('업무 지시서를 전달했습니다.');
   if(source){ source.close(); source = null; }
@@ -346,21 +599,39 @@ function listen(){
     try { ev = JSON.parse(m.data); } catch(e){ return; }
 
     if(ev.type === 'status'){
-      setState(ev.agent, ev.state, ev.text);
-      if(ev.state === 'working') setLog('<b>' + esc(ev.agent) + '</b> — ' + esc(ev.text));
-      else if(ev.state === 'submit') setLog('<b>' + esc(ev.agent) + '</b> — ' + esc(ev.text) + ' (제출함으로 이동)');
+      setState(ev.agent, ev.state, ev.text, ev.time);
+      var tmLabel = ev.time ? '<span class="tm" style="margin-right:6px;">' + esc(ev.time) + '</span>' : '';
+      if(ev.state === 'working') setLog(tmLabel + '<b>' + dn(ev.agent) + '</b> — ' + esc(ev.text));
+      else if(ev.state === 'submit') setLog(tmLabel + '<b>' + dn(ev.agent) + '</b> — ' + esc(ev.text) + ' (팀장실로 전달)');
     }
     else if(ev.type === 'step')  addStep(ev);
-    else if(ev.type === 'round') addBar(ev.text);
+    else if(ev.type === 'round'){
+      addBar(ev.text);
+      if(ev.round === 1) stats.lastStart = ev.time || '-';
+    }
     else if(ev.type === 'await-approval') showApproval(ev);
     else if(ev.type === 'revising'){
       setLog('보완 요청을 반영해 다시 작업합니다.');
       addNote(ev.text, 'done-note');
+      // 이번 회차 결과는 지났으니, 새 결과가 나올 때까지 결과 칸을 비워둔다
+      document.getElementById('result').innerHTML = '';
     }
     else if(ev.type === 'approved'){
-      addNote(ev.text, 'done-note');
+      var result = document.getElementById('result');
+      var box = result.querySelector('.approve');
+      if(box){
+        box.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+        var ta = box.querySelector('textarea'); if(ta) ta.disabled = true;
+        var p = box.querySelector('p'); if(p) p.textContent = ev.text;
+      } else {
+        var note = document.createElement('div');
+        note.className = 'done-note';
+        note.textContent = ev.text;
+        result.appendChild(note);
+      }
       setLog('업무 종료. 직원들이 자리로 돌아갔습니다.');
       resetCrew();
+      stats.completedJobs++;
     }
     else if(ev.type === 'error'){
       addNote(ev.text, 'err');
@@ -371,6 +642,8 @@ function listen(){
     else if(ev.type === 'done'){
       finish();
     }
+
+    if(currentView === 'dashboard') renderDashboard();
   };
 
   source.onerror = function(){
