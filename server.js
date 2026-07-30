@@ -3,10 +3,10 @@
  *
  * 구조 요약 (비전공자용):
  *   대표(사용자)가 업무를 시키면
- *   1) 이지혜(팀장)가 무엇을 알아봐야 하는지 목록을 만들고
- *   2) 재민·다은이 웹을 검색해 나눠서 조사하고
- *   3) 승효가 그 조사가 믿을 만한지 검사하고 (미흡하면 다시 조사시킴)
- *   4) 이지혜가 전체를 검수해서 보고서를 만들고 (부족하면 팀에 재작업 지시)
+ *   1) 팀장1(팀장)이 무엇을 알아봐야 하는지 목록을 만들고
+ *   2) 조사팀1·조사팀2가 웹을 검색해 나눠서 조사하고
+ *   3) 검증팀1이 그 조사가 믿을 만한지 검사하고 (미흡하면 다시 조사시킴)
+ *   4) 팀장1이 전체를 검수해서 보고서를 만들고 (부족하면 팀에 재작업 지시)
  *   5) 마지막으로 대표에게 올려서 승인 또는 보완 요청을 받는다.
  *
  * 진행 상황은 일이 벌어지는 즉시 화면으로 보내진다(SSE). 다 끝날 때까지 기다리지 않는다.
@@ -25,8 +25,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const OPENROUTER_URL = process.env.OPENROUTER_URL || "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-const MAX_RESEARCH_RETRY = 2; // 승효가 미흡 판정했을 때 재조사 최대 횟수 (직원 1명당) — 너무 크면 대기 시간이 길어져 낮춤
-const MAX_MANAGER_RETRY = 1;  // 이지혜가 반려했을 때 재작업 최대 횟수 — 너무 크면 대기 시간이 길어져 낮춤
+const MAX_RESEARCH_RETRY = 2; // 검증팀1이 미흡 판정했을 때 재조사 최대 횟수 (직원 1명당) — 너무 크면 대기 시간이 길어져 낮춤
+const MAX_MANAGER_RETRY = 1;  // 팀장1이 반려했을 때 재작업 최대 횟수 — 너무 크면 대기 시간이 길어져 낮춤
 const MAX_CEO_ROUNDS = 3;     // 대표가 보완 요청할 수 있는 최대 횟수
 const JOB_TTL_MS = 60 * 60 * 1000; // 1시간 지나면 메모리에서 정리
 
@@ -60,9 +60,9 @@ function friendlyModel(entry) {
 
 /**
  * 역할에 배정된 풀(경제/품질)을 순서대로 시도할 후보 목록으로 만든다.
- * - 경제형 역할(재민·다은)은 무료 모델을 먼저 다 시도하고,
+ * - 경제형 역할(조사팀1·조사팀2)은 무료 모델을 먼저 다 시도하고,
  *   전부 실패하면 품질 TOP5로 자동 전환한다(서비스가 멈추지 않게 하는 안전망).
- * - 재민과 다은이 같은 모델을 쓰지 않도록, 배정된 rank만큼 목록을 회전시킨다.
+ * - 조사팀1과 조사팀2가 같은 모델을 쓰지 않도록, 배정된 rank만큼 목록을 회전시킨다.
  */
 function resolveCandidates(config, roleKey) {
   const assignment = config.역할배정[roleKey];
@@ -82,7 +82,7 @@ function resolveCandidates(config, roleKey) {
 
   if (assignment.pool === "경제") {
     const economy = config.경제형_모델.map((e) => ({ model: e.model, provider: e.provider }));
-    // 재민(rank1)은 무료 1순위부터, 다은(rank2)은 무료 2순위부터 시작 → 서로 다른 모델을 쓴다
+    // 조사팀1(rank1)은 무료 1순위부터, 조사팀2(rank2)은 무료 2순위부터 시작 → 서로 다른 모델을 쓴다
     return rotate(economy, (assignment.rank || 1) - 1).concat(qualityFrom(assignment.rank));
   }
   return qualityFrom(assignment.rank);
@@ -254,7 +254,7 @@ const 콘텐츠지시 = (question, report) =>
   "- 전문용어 없이 쉬운 말로. 대표님이 그대로 복사해서 쓸 수 있는 완성된 문장으로 쓴다.\n\n" +
   "다시 한번 강조: 반드시 한국어로만 작성하세요.";
 
-/** 직원 1명: 조사 → 승효 검증 → (미흡하면) 재조사 */
+/** 직원 1명: 조사 → 검증팀1 검증 → (미흡하면) 재조사 */
 async function researchWithVerification(job, config, agentName, researchRoleKey, task, question, shortLabel) {
   let feedback = "";
   let lastText = "";
@@ -283,13 +283,13 @@ async function researchWithVerification(job, config, agentName, researchRoleKey,
       citations: lastCitations,
     });
 
-    // 승효 검증
-    emit(job, { type: "status", agent: "승효", state: "working", text: agentName + " 결과 검사 중" });
+    // 검증팀1 검증
+    emit(job, { type: "status", agent: "검증팀1", state: "working", text: agentName + " 결과 검사 중" });
     let verifyJson;
     let verifyModel = "AI";
     try {
       const verifyResult = await callWithFallback(
-        config, "검증_승효",
+        config, "검증_검증팀1",
         검증지시(task, lastText, lastCitations.map((c) => c.url).join(", ")),
         false, 800
       );
@@ -300,10 +300,10 @@ async function researchWithVerification(job, config, agentName, researchRoleKey,
       verifyJson = { status: "pass", reason: "검사를 진행하지 못해 통과 처리했습니다.", instruction: "" };
     }
 
-    emit(job, { type: "status", agent: "승효", state: "submit", text: "검사 완료" });
+    emit(job, { type: "status", agent: "검증팀1", state: "submit", text: "검사 완료" });
     emit(job, {
       type: "step",
-      agent: "승효",
+      agent: "검증팀1",
       label: "검사 결과 — " + agentName + " " + attempt + "차 (" + (verifyJson.status === "pass" ? "통과" : "다시 조사") + ")",
       model: verifyModel,
       text: verifyJson.reason + (verifyJson.status !== "pass" && verifyJson.instruction ? "\n\n보완 요청: " + verifyJson.instruction : ""),
@@ -333,8 +333,8 @@ async function runPipeline(job) {
     for (let round = 1; round <= MAX_CEO_ROUNDS; round++) {
       emit(job, { type: "round", round, text: round === 1 ? "업무 시작" : "대표님 보완 요청 반영 (" + round + "차)" });
 
-      // 1) 이지혜 — 무엇을 알아봐야 하는지 목록 만들기
-      emit(job, { type: "status", agent: "이지혜", state: "working", text: "업무 지시서 작성 중" });
+      // 1) 팀장1 — 무엇을 알아봐야 하는지 목록 만들기
+      emit(job, { type: "status", agent: "팀장1", state: "working", text: "업무 지시서 작성 중" });
       const checklistResult = await callWithFallback(
         config, "체크리스트_팀장",
         한국어전용 +
@@ -352,9 +352,9 @@ async function runPipeline(job) {
         false, 700
       );
       const checklist = checklistResult.text;
-      emit(job, { type: "status", agent: "이지혜", state: "submit", text: "지시서 전달" });
+      emit(job, { type: "status", agent: "팀장1", state: "submit", text: "지시서 전달" });
       emit(job, {
-        type: "step", agent: "이지혜", label: "업무 지시서",
+        type: "step", agent: "팀장1", label: "업무 지시서",
         model: checklistResult.modelUsed, text: checklist,
       });
 
@@ -370,20 +370,20 @@ async function runPipeline(job) {
           (managerFeedback ? "\n\n팀장 보완 지시: " + managerFeedback : "");
 
         const [w1, w2] = await Promise.all([
-          researchWithVerification(job, config, "재민", "조사_재민", 공통("1번과 2번 항목"), question, "1번·2번 항목"),
-          researchWithVerification(job, config, "다은", "조사_다은", 공통("3번과 4번 항목"), question, "3번·4번 항목"),
+          researchWithVerification(job, config, "조사팀1", "조사_조사팀1", 공통("1번과 2번 항목"), question, "1번·2번 항목"),
+          researchWithVerification(job, config, "조사팀2", "조사_조사팀2", 공통("3번과 4번 항목"), question, "3번·4번 항목"),
         ]);
 
-        emit(job, { type: "status", agent: "이지혜", state: "working", text: "전체 검수 중" });
+        emit(job, { type: "status", agent: "팀장1", state: "working", text: "전체 검수 중" });
         const reviewResult = await callWithFallback(
-          config, "최종승인_이지혜",
+          config, "최종승인_팀장1",
           한국어전용 +
           "당신은 1인 사업가(대표)를 돕는 AI 팀의 팀장입니다. 팀원 두 명의 조사 결과를 검수하고, " +
           "대표에게 올릴 보고서를 작성하세요. 대표는 개발이나 전문 분야를 모르는 1인 사업가입니다.\n\n" +
           "[대표의 질문]\n" + question + "\n\n" +
           (ceoFeedback ? "[대표님 보완 요청]\n" + ceoFeedback + "\n\n" : "") +
-          "[재민의 조사" + (w1.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w1.text + "\n\n" +
-          "[다은의 조사" + (w2.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w2.text + "\n\n" +
+          "[조사팀1의 조사" + (w1.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w1.text + "\n\n" +
+          "[조사팀2의 조사" + (w2.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w2.text + "\n\n" +
           "판단 기준: 대표의 질문에 실제로 답이 되는가, 근거가 있는가, 대표가 이걸 보고 결정을 내릴 수 있는가.\n" +
           "중요: 대표님을 오래 기다리게 하면 안 됩니다. 완벽하지 않아도 대표가 판단하기에 충분하면 " +
           "승인(approved:true)하고, 부족한 부분은 report의 '아직 확인 못 한 것'에 솔직히 적으세요. " +
@@ -408,13 +408,13 @@ async function runPipeline(job) {
         const 반려 = reviewJson && reviewJson.approved === false && mAttempt <= MAX_MANAGER_RETRY;
         if (반려) {
           managerFeedback = reviewJson.feedback || "근거를 더 보강해 주세요.";
-          emit(job, { type: "status", agent: "이지혜", state: "submit", text: "반려, 재작업 지시" });
+          emit(job, { type: "status", agent: "팀장1", state: "submit", text: "반려, 재작업 지시" });
           emit(job, {
-            type: "step", agent: "이지혜", label: "검수 결과 — 다시 작업 (" + mAttempt + "차)",
+            type: "step", agent: "팀장1", label: "검수 결과 — 다시 작업 (" + mAttempt + "차)",
             model: reviewResult.modelUsed, text: managerFeedback,
           });
-          emit(job, { type: "status", agent: "재민", state: "idle", text: "재작업 대기" });
-          emit(job, { type: "status", agent: "다은", state: "idle", text: "재작업 대기" });
+          emit(job, { type: "status", agent: "조사팀1", state: "idle", text: "재작업 대기" });
+          emit(job, { type: "status", agent: "조사팀2", state: "idle", text: "재작업 대기" });
           continue;
         }
 
@@ -430,8 +430,8 @@ async function runPipeline(job) {
             "## 결론\n팀장이 정해진 재작업 횟수 안에 만족할 만한 수준까지 끌어올리지 못했습니다. " +
             "아래는 지금까지 조사된 내용이며, 부족한 부분을 함께 적었습니다.\n\n" +
             "## 팀장이 아직 부족하다고 본 점\n" + (reviewJson.feedback || "구체적인 사유가 전달되지 않았습니다.") + "\n\n" +
-            "## 재민이 조사한 내용\n" + w1.text + "\n\n" +
-            "## 다은이 조사한 내용\n" + w2.text + "\n\n" +
+            "## 조사팀1이 조사한 내용\n" + w1.text + "\n\n" +
+            "## 조사팀2이 조사한 내용\n" + w2.text + "\n\n" +
             "## 대표님이 지금 결정하실 것\n" +
             "- 보완 요청: 위 부족한 점을 적어 다시 시키실 수 있습니다.\n" +
             "- 이대로 승인: 지금 내용만으로 판단하고 마무리합니다.";
@@ -440,9 +440,9 @@ async function runPipeline(job) {
           finalReport = reviewResult.text;
         }
 
-        emit(job, { type: "status", agent: "이지혜", state: "submit", text: "대표님께 보고" });
+        emit(job, { type: "status", agent: "팀장1", state: "submit", text: "대표님께 보고" });
         emit(job, {
-          type: "step", agent: "이지혜",
+          type: "step", agent: "팀장1",
           label: 미흡 ? "팀장 검수 — 일부 부족한 상태로 올림" : "팀장 검수 완료 — 대표님께 올림",
           model: reviewResult.modelUsed, text: finalReport, citations: allCitations, isReport: true,
         });
@@ -450,7 +450,7 @@ async function runPipeline(job) {
       }
 
       // 5) 대표(사용자) 최종 승인
-      ["재민", "다은", "승효", "이지혜"].forEach((n) =>
+      ["조사팀1", "조사팀2", "검증팀1", "팀장1"].forEach((n) =>
         emit(job, { type: "status", agent: n, state: "done", text: "승인 대기" })
       );
       emit(job, {
@@ -464,20 +464,20 @@ async function runPipeline(job) {
       const decision = await waitForCeo(job);
 
       if (decision.action === "approve") {
-        // 승인된 보고서로 콘텐츠팀(하늘)이 바로 쓸 수 있는 홍보문구 초안을 만든다
-        emit(job, { type: "status", agent: "하늘", state: "working", text: "승인된 내용으로 콘텐츠 초안 작성 중" });
+        // 승인된 보고서로 콘텐츠팀(마케팅팀1)이 바로 쓸 수 있는 홍보문구 초안을 만든다
+        emit(job, { type: "status", agent: "마케팅팀1", state: "working", text: "승인된 내용으로 콘텐츠 초안 작성 중" });
         try {
-          const contentResult = await callWithFallback(config, "콘텐츠_하늘", 콘텐츠지시(question, finalReport), false, 900);
-          emit(job, { type: "status", agent: "하늘", state: "submit", text: "콘텐츠 초안 제출" });
+          const contentResult = await callWithFallback(config, "콘텐츠_마케팅팀1", 콘텐츠지시(question, finalReport), false, 900);
+          emit(job, { type: "status", agent: "마케팅팀1", state: "submit", text: "콘텐츠 초안 제출" });
           emit(job, {
-            type: "step", agent: "하늘", label: "콘텐츠팀 초안 — 바로 쓰는 홍보문구",
+            type: "step", agent: "마케팅팀1", label: "콘텐츠팀 초안 — 바로 쓰는 홍보문구",
             model: contentResult.modelUsed, text: contentResult.text, isContent: true,
           });
         } catch (err) {
           if (err.message === "API_KEY_MISSING") throw err;
           console.warn("[콘텐츠 초안 생략]", err.message);
         }
-        emit(job, { type: "status", agent: "하늘", state: "done", text: "대기 중" });
+        emit(job, { type: "status", agent: "마케팅팀1", state: "done", text: "대기 중" });
         emit(job, { type: "approved", text: "대표님이 승인하셨습니다. 업무를 종료합니다." });
         break;
       }
