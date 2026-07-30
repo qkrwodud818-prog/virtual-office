@@ -25,8 +25,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const OPENROUTER_URL = process.env.OPENROUTER_URL || "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-const MAX_RESEARCH_RETRY = 3; // 승효가 미흡 판정했을 때 재조사 최대 횟수 (직원 1명당)
-const MAX_MANAGER_RETRY = 2;  // 이지혜가 반려했을 때 재작업 최대 횟수
+const MAX_RESEARCH_RETRY = 2; // 승효가 미흡 판정했을 때 재조사 최대 횟수 (직원 1명당) — 너무 크면 대기 시간이 길어져 낮춤
+const MAX_MANAGER_RETRY = 1;  // 이지혜가 반려했을 때 재작업 최대 횟수 — 너무 크면 대기 시간이 길어져 낮춤
 const MAX_CEO_ROUNDS = 3;     // 대표가 보완 요청할 수 있는 최대 횟수
 const JOB_TTL_MS = 60 * 60 * 1000; // 1시간 지나면 메모리에서 정리
 
@@ -109,7 +109,7 @@ async function callOpenRouter(model, prompt, useSearch, maxTokens) {
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 120000); // 2분 넘으면 포기하고 다음 모델로
+  const timer = setTimeout(() => controller.abort(), 60000); // 1분 넘으면 포기하고 다음 모델로 (예전 2분 → 대기 시간 단축)
   let res;
   try {
     res = await fetch(OPENROUTER_URL, {
@@ -232,9 +232,12 @@ const 조사지시 = (question, task, feedback) =>
 
 const 검증지시 = (task, text, urls) =>
   한국어전용 +
-  "당신은 동료의 조사 결과를 검사하는 검증 담당 직원입니다. 아래를 냉정하게 검사하세요.\n\n" +
+  "당신은 동료의 조사 결과를 검사하는 검증 담당 직원입니다. 아래를 검사하세요.\n\n" +
   "검사 기준: (1) 맡은 항목을 실제로 다 다뤘는가 (2) 출처가 붙어 있는가 " +
   "(3) 근거 없이 단정한 부분이 없는가 (4) 숫자·시점이 빠지지 않았는가\n\n" +
+  "중요: 대표님을 오래 기다리게 하면 안 됩니다. 완벽하지 않아도, 대표가 대략적인 판단을 " +
+  "내리기에 충분하면 통과(pass)시키세요. retry는 정말 심각한 문제(항목을 아예 안 다룸, " +
+  "출처가 하나도 없음, 완전히 지어낸 것으로 보임)가 있을 때만 쓰세요. 애매하면 통과시키세요.\n\n" +
   "[맡은 항목]\n" + task + "\n\n[조사 결과]\n" + text + "\n\n[붙어 있는 출처]\n" + (urls || "없음") + "\n\n" +
   "JSON만 출력하세요. 다른 말은 쓰지 마세요. reason과 instruction 값도 반드시 한국어로만 쓰세요.\n" +
   '{"status":"pass 또는 retry","reason":"판정 이유를 쉬운 말 한 문장으로","instruction":"retry라면 무엇을 어떻게 더 조사해야 하는지 구체적으로. pass면 빈 문자열"}';
@@ -252,17 +255,18 @@ const 콘텐츠지시 = (question, report) =>
   "다시 한번 강조: 반드시 한국어로만 작성하세요.";
 
 /** 직원 1명: 조사 → 승효 검증 → (미흡하면) 재조사 */
-async function researchWithVerification(job, config, agentName, researchRoleKey, task, question) {
+async function researchWithVerification(job, config, agentName, researchRoleKey, task, question, shortLabel) {
   let feedback = "";
   let lastText = "";
   let lastCitations = [];
+  const 짧게 = shortLabel ? shortLabel + " " : "";
 
   for (let attempt = 1; attempt <= MAX_RESEARCH_RETRY; attempt++) {
     emit(job, {
       type: "status",
       agent: agentName,
       state: "working",
-      text: attempt === 1 ? "자료 조사 중" : attempt + "차 재조사 중",
+      text: attempt === 1 ? 짧게 + "조사 중" : 짧게 + attempt + "차 재조사 중",
     });
 
     const result = await callWithFallback(config, researchRoleKey, 조사지시(question, task, feedback), true, 2000);
@@ -366,8 +370,8 @@ async function runPipeline(job) {
           (managerFeedback ? "\n\n팀장 보완 지시: " + managerFeedback : "");
 
         const [w1, w2] = await Promise.all([
-          researchWithVerification(job, config, "재민", "조사_재민", 공통("1번과 2번 항목"), question),
-          researchWithVerification(job, config, "다은", "조사_다은", 공통("3번과 4번 항목"), question),
+          researchWithVerification(job, config, "재민", "조사_재민", 공통("1번과 2번 항목"), question, "1번·2번 항목"),
+          researchWithVerification(job, config, "다은", "조사_다은", 공통("3번과 4번 항목"), question, "3번·4번 항목"),
         ]);
 
         emit(job, { type: "status", agent: "이지혜", state: "working", text: "전체 검수 중" });
@@ -381,7 +385,9 @@ async function runPipeline(job) {
           "[재민의 조사" + (w1.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w1.text + "\n\n" +
           "[다은의 조사" + (w2.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w2.text + "\n\n" +
           "판단 기준: 대표의 질문에 실제로 답이 되는가, 근거가 있는가, 대표가 이걸 보고 결정을 내릴 수 있는가.\n" +
-          "부족하면 반려하고 무엇을 더 조사해야 하는지 지시하세요.\n\n" +
+          "중요: 대표님을 오래 기다리게 하면 안 됩니다. 완벽하지 않아도 대표가 판단하기에 충분하면 " +
+          "승인(approved:true)하고, 부족한 부분은 report의 '아직 확인 못 한 것'에 솔직히 적으세요. " +
+          "정말 핵심 질문에 아예 답이 안 되는 경우에만 반려하세요.\n\n" +
           "JSON만 출력하세요. 다른 말은 쓰지 마세요.\n" +
           '{"approved":true 또는 false,' +
           '"feedback":"반려할 때 팀원에게 줄 구체적 보완 지시. 승인이면 빈 문자열",' +
