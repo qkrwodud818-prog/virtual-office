@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가상오피스 — AI 회사를 차리세요</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6EF;
+    --bg-soft:#F1EBDD;
+    --ink:#221F1B;
+    --ink-soft:#5A554C;
+    --line:#E3DACB;
+    --primary:#3E4C7A;
+    --primary-soft:#DEE3F0;
+    --wood:#C97F2E;
+    --wood-soft:#F3DFC2;
+    --sage:#4F7A56;
+    --sage-soft:#DCEADB;
+    --coral:#C4553B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans KR', sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  .font-display{font-family:'Do Hyeon', sans-serif; letter-spacing:0.01em;}
+  .font-mono{font-family:'IBM Plex Mono', monospace;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
+  a{color:inherit;}
+
+  /* NAV */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(250,246,239,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; height:68px;}
+  .logo{font-size:22px;}
+  .logo span{color:var(--wood);}
+  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--ink-soft);}
+  .nav-links a:hover{color:var(--ink);}
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:11px 20px; border-radius:8px; font-size:14px; font-weight:600;
+    border:1px solid transparent; cursor:pointer; text-decoration:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--primary); color:#fff;}
+  .btn-primary:hover{box-shadow:0 6px 16px rgba(62,76,122,0.28);}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line);}
+  .btn-wood{background:var(--wood); color:#fff;}
+  .btn-wood:hover{box-shadow:0 6px 16px rgba(201,127,46,0.3);}
+  .btn-block{width:100%; justify-content:center;}
+
+  /* HERO */
+  .hero{padding:76px 0 60px;}
+  .hero-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--wood); font-weight:600;
+    background:var(--wood-soft); padding:6px 12px; border-radius:20px; margin-bottom:18px;
+  }
+  .eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--wood);}
+  h1{font-size:44px; line-height:1.25; margin-bottom:20px;}
+  h1 .u{color:var(--primary); text-decoration:underline; text-decoration-color:var(--wood-soft); text-decoration-thickness:8px; text-underline-offset:-2px;}
+  .hero p.lede{font-size:17px; color:var(--ink-soft); margin-bottom:30px; max-width:440px;}
+  .hero-ctas{display:flex; gap:12px; margin-bottom:22px;}
+  .hero-note{font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+
+  /* OFFICE DEMO */
+  .office-card{
+    background:var(--bg-soft); border:1px solid var(--line); border-radius:16px;
+    padding:14px; position:relative;
+  }
+  .office-floor{
+    position:relative; width:100%; height:320px; background:#fff;
+    border-radius:12px; border:1px solid var(--line); overflow:hidden;
+  }
+  .room{position:absolute; border:1.5px dashed var(--line); border-radius:10px;}
+  .room-label{position:absolute; top:6px; left:8px; font-size:11px; color:var(--ink-soft); font-weight:600;}
+  .desk{position:absolute; width:22px; height:13px; background:var(--wood); border-radius:2px; transform:translate(-50%,40%);}
+  .tray{position:absolute; width:24px; height:20px; background:var(--primary-soft); border:1px solid var(--primary); border-radius:5px; transform:translate(-50%,-30%); display:flex; align-items:center; justify-content:center; font-size:11px;}
+  .worker{position:absolute; width:18px; height:24px; transition:left 1s ease, top 1s ease; transform:translate(-50%,-70%); text-align:center;}
+  .worker .head{position:absolute; top:0; left:5px; width:8px; height:8px; border-radius:50%; background:#f2c9a0;}
+  .worker .body{position:absolute; top:7px; left:2px; width:14px; height:13px; border-radius:2px;}
+  .b-w1{background:#4C7BC4;} .b-w2{background:#4F9E70;} .b-w3{background:#C4623E;} .b-mgr{background:#7C6BC7;}
+  .wname{position:absolute; top:26px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--ink-soft); white-space:nowrap;}
+  .tag{position:absolute; top:-19px; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:10px; background:var(--ink); color:#fff; border-radius:6px; padding:3px 6px; opacity:0; transition:opacity .25s;}
+  .tag.show{opacity:1;}
+  .office-log{
+    margin-top:12px; padding:12px 14px; background:#fff; border:1px solid var(--line); border-radius:10px;
+    display:flex; align-items:center; gap:10px; font-size:13px;
+  }
+  .office-log .dot{width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0; animation:blink 1.4s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  /* PROCESS */
+  section{padding:72px 0;}
+  .section-head{max-width:560px; margin-bottom:44px;}
+  .section-head .eyebrow{background:var(--primary-soft); color:var(--primary);}
+  .section-head .eyebrow::before{background:var(--primary);}
+  h2{font-size:32px; margin-bottom:12px;}
+  .section-head p{color:var(--ink-soft); font-size:15px;}
+  .process-list{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+  .process-item{border-top:2px solid var(--ink); padding-top:16px;}
+  .process-num{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--wood); font-weight:600; margin-bottom:10px; display:block;}
+  .process-item h3{font-size:17px; margin-bottom:8px;}
+  .process-item p{font-size:13.5px; color:var(--ink-soft);}
+
+  /* TRUST */
+  .trust{background:var(--primary); color:#fff; border-radius:20px; margin:0 28px;}
+  .trust .wrap{padding:56px 28px; max-width:1064px;}
+  .trust-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:44px; align-items:center;}
+  .trust h2{color:#fff;}
+  .trust p.lede{color:#D6DBEC; font-size:15px; margin-bottom:22px;}
+  .compare{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:22px;}
+  .compare-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.14); font-size:14px;}
+  .compare-row:last-child{border-bottom:none;}
+  .compare-row .no{color:#B9C0DD;}
+  .compare-row .yes{color:#F6D9B8; font-weight:600;}
+
+  /* PRICING */
+  .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .price-card{
+    background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px;
+    position:relative; display:flex; flex-direction:column;
+  }
+  .price-card.featured{border:2px solid var(--primary); box-shadow:0 12px 28px rgba(62,76,122,0.14);}
+  .badge{
+    position:absolute; top:-13px; left:28px; background:var(--primary); color:#fff;
+    font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px;
+  }
+  .price-name{font-size:15px; color:var(--ink-soft); margin-bottom:4px;}
+  .price-tagline{font-size:13.5px; color:var(--ink-soft); margin-bottom:18px;}
+  .price-amount{font-family:'IBM Plex Mono',monospace; font-size:34px; font-weight:500; margin-bottom:2px;}
+  .price-amount span{font-size:14px; color:var(--ink-soft); font-family:'IBM Plex Sans KR';}
+  .price-feats{list-style:none; margin:20px 0 24px; flex:1;}
+  .price-feats li{font-size:13.5px; color:var(--ink-soft); padding:8px 0; border-top:1px solid var(--line); display:flex; gap:8px;}
+  .price-feats li:first-child{border-top:none;}
+  .price-feats li::before{content:'✓'; color:var(--sage); font-weight:700;}
+
+  /* FOOTER CTA */
+  .cta-final{text-align:center; padding:88px 0;}
+  .cta-final h2{font-size:36px; margin-bottom:14px;}
+  .cta-final p{color:var(--ink-soft); margin-bottom:28px;}
+  .signup-form{display:flex; gap:8px; max-width:420px; margin:0 auto;}
+  .signup-form input{
+    flex:1; padding:13px 16px; border:1px solid var(--line); border-radius:8px; font-size:14px;
+    font-family:'IBM Plex Sans KR';
+  }
+  .signup-form input:focus{outline:2px solid var(--primary); outline-offset:1px;}
+  .form-note{font-size:12.5px; color:var(--ink-soft); margin-top:10px;}
+
+  footer{border-top:1px solid var(--line); padding:28px 0; font-size:13px; color:var(--ink-soft); text-align:center;}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    h1{font-size:32px;}
+    .process-list{grid-template-columns:1fr 1fr;}
+    .trust-grid{grid-template-columns:1fr;}
+    .pricing-grid{grid-template-columns:1fr;}
+    .trust{margin:0 16px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .worker{transition:none;}
+    .office-log .dot{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo font-display">가상<span>오피스</span></div>
+    <div class="nav-links">
+      <a href="#how">어떻게 일하나요</a>
+      <a href="#trust">신뢰 구조</a>
+      <a href="#pricing">요금제</a>
+    </div>
+    <a href="#pricing" class="btn btn-primary">무료로 시작</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">1인 사업가를 위한 AI 팀</div>
+      <h1 class="font-display">직원을 고용하지 마세요.<br><span class="u">AI 회사</span>를 차리세요.</h1>
+      <p class="lede">시장조사부터 검증, 승인까지 — 재민·다은·승효·이지혜 네 명의 AI 팀원이 24시간 당신의 회사를 운영합니다.</p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn btn-primary">무료로 팀 꾸리기</a>
+        <a href="#how" class="btn btn-ghost">어떻게 일하는지 보기</a>
+      </div>
+      <div class="hero-note">카드 등록 없이 바로 체험 · 4단계 교차 검증 구조</div>
+    </div>
+
+    <div class="office-card">
+      <div class="office-floor" id="floor">
+        <div class="room" style="left:2%; top:4%; width:44%; height:58%;"><span class="room-label">조사팀</span></div>
+        <div class="room" style="left:48%; top:4%; width:22%; height:58%;"><span class="room-label">검증팀</span></div>
+        <div class="room" style="left:73%; top:4%; width:25%; height:22%;"><span class="room-label">제출함</span></div>
+        <div class="room" style="left:73%; top:30%; width:25%; height:32%;"><span class="room-label">대표실</span></div>
+
+        <div class="desk" style="left:14%; top:32%;"></div>
+        <div class="desk" style="left:32%; top:32%;"></div>
+        <div class="desk" style="left:59%; top:32%;"></div>
+        <div class="desk" style="left:85%; top:44%;"></div>
+        <div class="tray" style="left:85%; top:14%;">📥</div>
+
+        <div id="w1" class="worker" style="left:14%; top:32%;"><div class="tag"></div><div class="body b-w1"></div><div class="head"></div><div class="wname">재민</div></div>
+        <div id="w2" class="worker" style="left:32%; top:32%;"><div class="tag"></div><div class="body b-w2"></div><div class="head"></div><div class="wname">다은</div></div>
+        <div id="w3" class="worker" style="left:59%; top:32%;"><div class="tag"></div><div class="body b-w3"></div><div class="head"></div><div class="wname">승효</div></div>
+        <div id="mgr" class="worker" style="left:85%; top:44%;"><div class="tag"></div><div class="body b-mgr"></div><div class="head"></div><div class="wname">이지혜</div></div>
+      </div>
+      <div class="office-log"><span class="dot"></span><span id="log">오늘의 업무를 시작할게요</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">일하는 순서</div>
+      <h2 class="font-display">네 명이 순서대로, 서로를 검토합니다</h2>
+      <p>혼자 일하는 AI는 실수를 걸러줄 사람이 없습니다. 저희는 사람이 일하는 방식 그대로, 조사 → 검증 → 승인 → 전달을 거칩니다.</p>
+    </div>
+    <div class="process-list">
+      <div class="process-item">
+        <span class="process-num">01</span>
+        <h3>재민·다은이 조사</h3>
+        <p>두 명이 동시에 자료를 찾습니다. 출처와 최신성을 우선 확인합니다.</p>
+      </div>
+      <div class="process-item">
+        <span class="process-num">02</span>
+        <h3>승효가 검증</h3>
+        <p>자료 신뢰도와 요청 내용 부합 여부를 확인하고, 부족하면 재조사를 요청합니다.</p>
+      </div>
+      <div class="process-item">
+        <span class="process-num">03</span>
+        <h3>이지혜가 승인</h3>
+        <p>전체 결과가 실제 질문에 답이 되는지 종합 검토합니다.</p>
+      </div>
+      <div class="process-item">
+        <span class="process-num">04</span>
+        <h3>대표님께 전달</h3>
+        <p>노션·디스코드로 자동 전송됩니다. 확인 버튼 한 번이면 끝입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="trust">
+    <div class="wrap">
+      <div class="trust-grid">
+        <div>
+          <div class="eyebrow" style="background:rgba(255,255,255,0.14); color:#F6D9B8;">신뢰 구조</div>
+          <h2 class="font-display">다른 AI 팀은 왜<br>못 미더울까요</h2>
+          <p class="lede">혼자 일하는 AI는 결과가 그럴듯해 보여도 검증이 없습니다. 저희는 처음부터 여러 명이 서로 확인하는 구조로 설계했습니다.</p>
+          <a href="#pricing" class="btn btn-wood">차이를 직접 확인하기</a>
+        </div>
+        <div class="compare">
+          <div class="compare-row"><span class="no">단일 AI가 혼자 작성</span><span class="yes">4명이 교차 검증</span></div>
+          <div class="compare-row"><span class="no">결과만 통보</span><span class="yes">과정이 눈으로 보임</span></div>
+          <div class="compare-row"><span class="no">무료 체험 불가</span><span class="yes">카드 없이 5회 체험</span></div>
+          <div class="compare-row"><span class="no">근거 불명확</span><span class="yes">출처·부합성 확인 후 승인</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">요금제</div>
+      <h2 class="font-display">전체 팀을 그대로 드립니다</h2>
+      <p>직원 수로 등급을 나누지 않습니다. 등급 차이는 업무 처리량과 속도뿐입니다.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">체험판</div>
+        <div class="price-amount">0원</div>
+        <div class="price-tagline">우리 회사, 일단 출근시켜보세요</div>
+        <ul class="price-feats">
+          <li>AI 팀 4명 전원 체험</li>
+          <li>월 5회 업무 처리</li>
+          <li>카드 등록 불필요</li>
+        </ul>
+        <a href="#signup" class="btn btn-ghost btn-block">무료로 팀 꾸리기</a>
+      </div>
+      <div class="price-card featured">
+        <span class="badge">가장 많이 선택</span>
+        <div class="price-name">Basic</div>
+        <div class="price-amount">23,000<span>원/월</span></div>
+        <div class="price-tagline">AI 회사, 본격 가동</div>
+        <ul class="price-feats">
+          <li>AI 팀 4명 무제한 협업</li>
+          <li>월 30회 업무 처리</li>
+          <li>노션·디스코드 자동 연동</li>
+        </ul>
+        <a href="#signup" class="btn btn-primary btn-block">이 팀으로 시작하기</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Pro</div>
+        <div class="price-amount">50,000<span>원/월</span></div>
+        <div class="price-tagline">바쁜 대표님을 위한 더 빠른 팀</div>
+        <ul class="price-feats">
+          <li>처리 속도 우선순위</li>
+          <li>월 80회 업무 처리</li>
+          <li>재검증 무제한</li>
+        </ul>
+        <a href="#signup" class="btn btn-ghost btn-block">풀가동하기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="signup" class="cta-final">
+  <div class="wrap">
+    <h2 class="font-display">오늘, 첫 직원을 출근시켜 보세요</h2>
+    <p>이메일만 남기면 체험판 링크를 보내드립니다.</p>
+    <form class="signup-form" onsubmit="return handleSignup(event)">
+      <input type="email" placeholder="이메일 주소" required id="email-input">
+      <button type="submit" class="btn btn-primary">시작하기</button>
+    </form>
+    <p class="form-note" id="form-note">무료 체험 · 신용카드 불필요</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 가상오피스. 1인 사업가를 위한 AI 팀.</div>
+</footer>
+
+<script>
+  function handleSignup(e){
+    e.preventDefault();
+    const email = document.getElementById('email-input').value;
+    document.getElementById('form-note').textContent = email + ' 로 체험판 안내를 보내드릴게요 (데모: 실제 발송 아님)';
+    return false;
+  }
+
+  const desks = {w1:{left:14,top:32}, w2:{left:32,top:32}, w3:{left:59,top:32}, mgr:{left:85,top:44}};
+  const tray = {left:85, top:14};
+  function moveTo(id,pos,msg){
+    const el = document.getElementById(id);
+    el.style.left = pos.left + '%';
+    el.style.top = pos.top + '%';
+    const tag = el.querySelector('.tag');
+    if(msg){ tag.textContent = msg; tag.classList.add('show'); }
+    else { tag.classList.remove('show'); }
+  }
+  const seq = [
+    ()=>{ moveTo('w1',desks.w1,'자료 조사 중'); moveTo('w2',desks.w2,'자료 조사 중'); log('재민, 다은 — 자료 조사 중'); },
+    ()=>{ moveTo('w1',tray,'제출!'); log('재민 — 제출함으로 이동'); },
+    ()=>{ moveTo('w2',tray,'제출!'); log('다은 — 제출함으로 이동'); },
+    ()=>{ moveTo('w3',tray,'검증 중'); log('승효 — 자료 신뢰도 검증 중'); },
+    ()=>{ moveTo('w1',desks.w1,null); moveTo('w2',desks.w2,null); moveTo('w3',desks.w3,null); log('검증 완료, 팀장에게 전달'); },
+    ()=>{ moveTo('mgr',tray,'검토 중'); log('이지혜 — 최종 검토 중'); },
+    ()=>{ moveTo('mgr',tray,'승인 완료!'); log('이지혜 — 승인 완료, 대표님께 전달'); },
+    ()=>{ moveTo('mgr',desks.mgr,null); log('오늘의 업무를 시작할게요'); },
+  ];
+  function log(t){ document.getElementById('log').textContent = t; }
+  let i = 0;
+  function tick(){ seq[i](); i = (i+1) % seq.length; }
+  setInterval(tick, 1900);
+  tick();
+</script>
+</body>
+</html>

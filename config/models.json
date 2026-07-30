@@ -1,0 +1,24 @@
+{
+  "_설명": "품질_TOP5는 검증·최종승인 전용(매달 갱신 권장). 경제형_모델은 조사(재민·다은) 전용 무료 모델 — OpenRouter 무료 목록은 몇 주 단위로 삭제·교체되니 매주 openrouter.ai/collections/free-models 확인 권장. 경제형이 전부 실패하면 자동으로 품질_TOP5로 넘어가 서비스가 멈추지 않는다.",
+  "_검증기록": "2026-07-30 openrouter.ai 공개 모델 페이지에서 8개 ID 전수 대조. 기존 값 중 4개가 실제로 존재하지 않아 교체함(상세: 검증리포트 참고).",
+  "업데이트일": "2026-07-30",
+  "품질_TOP5": [
+    { "rank": 1, "model": "anthropic/claude-opus-4.8", "provider": "Anthropic", "검증": "확인됨" },
+    { "rank": 2, "model": "openai/gpt-5.6-terra", "provider": "OpenAI", "검증": "확인됨 ($2.50/$15 per 1M)" },
+    { "rank": 3, "model": "google/gemini-3.1-pro-preview", "provider": "Google", "검증": "확인됨 ($2/$12 per 1M)" },
+    { "rank": 4, "model": "anthropic/claude-sonnet-5", "provider": "Anthropic", "검증": "확인됨" },
+    { "rank": 5, "model": "deepseek/deepseek-v4-pro", "provider": "DeepSeek", "검증": "확인됨 ($0.435/$0.87 per 1M)" }
+  ],
+  "경제형_모델": [
+    { "model": "nvidia/nemotron-3-super-120b-a12b:free", "provider": "NVIDIA (무료)", "검증": "확인됨, 컨텍스트 1M" },
+    { "model": "google/gemma-4-31b-it:free", "provider": "Google (무료)", "검증": "확인됨, 컨텍스트 262K" },
+    { "model": "openai/gpt-oss-20b:free", "provider": "OpenAI (무료)", "검증": "확인됨, 컨텍스트 131K" }
+  ],
+  "역할배정": {
+    "체크리스트_팀장": { "pool": "품질", "rank": 1 },
+    "조사_재민": { "pool": "경제", "rank": 1 },
+    "조사_다은": { "pool": "경제", "rank": 2 },
+    "검증_승효": { "pool": "품질", "rank": 2 },
+    "최종승인_이지혜": { "pool": "품질", "rank": 1 }
+  }
+}

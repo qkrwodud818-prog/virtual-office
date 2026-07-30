@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가상오피스 — 내 AI 직원팀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6EF; --ink:#221F1B; --ink-soft:#5A554C; --line:#E3DACB;
+    --primary:#3E4C7A; --primary-soft:#DEE3F0;
+    --wood:#C97F2E; --sage:#4F7A56; --sage-soft:#DCEADB;
+    --skin:#F2C9A0;
+    --jaemin:#378ADD; --daeun:#1D9E75; --seunghyo:#D85A30; --jihye:#7F77DD;
+    --display:'Do Hyeon',-apple-system,sans-serif;
+    --body:'IBM Plex Sans KR',-apple-system,'Malgun Gothic',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); max-width:760px; margin:0 auto; padding:28px 18px 80px; line-height:1.6;}
+  h1{font-family:var(--display); font-size:26px; margin:0 0 4px; font-weight:400;}
+  p.sub{color:var(--ink-soft); font-size:14px; margin:0 0 22px;}
+
+  /* ── 업무 지시 입력 ── */
+  .ask{background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:18px;}
+  .ask label{display:block; font-size:13px; font-weight:600; margin-bottom:8px;}
+  .ask textarea{width:100%; min-height:70px; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
+    font-family:var(--body); font-size:14px; line-height:1.6; resize:vertical; background:var(--bg); color:var(--ink);}
+  .ask .row{display:flex; gap:8px; align-items:center; margin-top:10px;}
+  .hint{font-size:12px; color:var(--ink-soft); flex:1;}
+  button{font-family:var(--body); padding:11px 18px; border:none; border-radius:8px; background:var(--primary);
+    color:#fff; font-weight:600; cursor:pointer; font-size:14px;}
+  button:disabled{opacity:.45; cursor:not-allowed;}
+  button.ghost{background:#fff; color:var(--primary); border:1px solid var(--primary);}
+  button.go{background:var(--sage);}
+
+  /* ── 도트 사무실 ── */
+  .office{position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
+  .floor{position:relative; height:210px;}
+  .room{position:absolute; border:1.5px dashed var(--line); border-radius:8px;}
+  .room .tag{position:absolute; top:5px; left:8px; font-size:11px; color:var(--ink-soft); letter-spacing:.02em;}
+  #room-research{left:0; top:0; width:48%; height:100%;}
+  #room-verify{left:49.5%; top:0; width:23%; height:100%;}
+  #room-tray{left:74%; top:0; width:26%; height:46%;}
+  #room-ceo{left:74%; top:48.5%; width:26%; height:51.5%;}
+
+  .char{position:absolute; width:34px; margin-left:-17px; text-align:center;
+    transition:left .8s ease, top .8s ease;}
+  .char .head{width:15px; height:15px; border-radius:50%; background:var(--skin); margin:0 auto 2px;}
+  .char .body{width:24px; height:22px; border-radius:6px; margin:0 auto;}
+  .char .nm{font-size:10px; color:var(--ink-soft); margin-top:3px; white-space:nowrap;}
+  .char.act .body{box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px currentColor;}
+
+  .log{margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+    font-size:13px; color:var(--ink-soft); min-height:20px;}
+  .log b{color:var(--ink); font-weight:600;}
+
+  /* ── 직원 현황 ── */
+  .crew{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;}
+  .crew .c{background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 8px; text-align:center;}
+  .crew .c .n{font-size:13px; font-weight:600;}
+  .crew .c .r{font-size:10px; color:var(--ink-soft); margin-bottom:3px;}
+  .crew .c .s{font-size:11px; color:var(--ink-soft);}
+  .crew .c .s.working{color:var(--wood); font-weight:600;}
+  .crew .c .s.done{color:var(--sage);}
+
+  /* ── 진행 기록 ── */
+  .roundbar{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center;
+    margin:16px 0 10px; letter-spacing:.04em;}
+  .step{background:#fff; border:1px solid var(--line); border-radius:10px; padding:13px 15px; margin-bottom:9px;}
+  .step .lb{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:7px; font-size:12px; color:var(--ink-soft);}
+  .step .lb .who{font-weight:600; color:var(--ink);}
+  .step .lb .mt{font-family:var(--mono); font-size:10px; background:var(--primary-soft); color:var(--primary);
+    padding:2px 7px; border-radius:9px; white-space:nowrap;}
+  .step .tx{font-size:14px; white-space:pre-wrap;}
+  .step .tx h3{font-family:var(--display); font-weight:400; font-size:16px; margin:14px 0 5px;}
+  .step .tx h3:first-child{margin-top:0;}
+  .cits{font-size:11px; color:var(--ink-soft); margin-top:9px; padding-top:8px; border-top:1px dotted var(--line);}
+  .cits a{color:var(--primary);}
+
+  /* ── 보고서 / 대표 승인 ── */
+  .step.report{background:#fff; border:1.5px solid var(--primary);}
+  .approve{background:var(--sage-soft); border:1.5px solid var(--sage); border-radius:12px; padding:16px; margin:12px 0 20px;}
+  .approve h2{font-family:var(--display); font-weight:400; font-size:18px; margin:0 0 4px;}
+  .approve p{font-size:13px; color:var(--ink-soft); margin:0 0 12px;}
+  .approve textarea{width:100%; min-height:64px; padding:10px 12px; border:1px solid var(--line);
+    border-radius:8px; font-family:var(--body); font-size:14px; background:#fff; margin-bottom:10px; display:none;}
+  .approve .btns{display:flex; gap:8px; flex-wrap:wrap;}
+  .done-note{background:var(--sage-soft); border:1px solid var(--sage); color:#2F4A35;
+    border-radius:10px; padding:13px 15px; font-size:14px; margin:12px 0;}
+  .err{background:#FBE4E1; color:#8A2E22; border:1px solid #E9BDB5; border-radius:10px; padding:13px 15px; font-size:13px; margin:12px 0;}
+</style>
+</head>
+<body>
+
+  <h1>가상오피스</h1>
+  <p class="sub">대표님이 업무를 지시하면 AI 직원 4명이 나눠서 처리하고, 팀장이 검수한 뒤 대표님 승인을 받습니다.</p>
+
+  <div class="ask">
+    <label for="q">직원들에게 시킬 업무</label>
+    <textarea id="q" placeholder="예) 반려동물 사료 성분을 사진으로 찍으면 알려주는 앱, 지금 시작해도 될지 시장을 조사해줘"></textarea>
+    <div class="row">
+      <span class="hint" id="hint">보통 2~5분 걸립니다. 창을 닫지 마세요.</span>
+      <button id="btn">업무 지시하기</button>
+    </div>
+  </div>
+
+  <div class="office">
+    <div class="floor" id="floor">
+      <div class="room" id="room-research"><span class="tag">조사팀</span></div>
+      <div class="room" id="room-verify"><span class="tag">검증팀</span></div>
+      <div class="room" id="room-tray"><span class="tag">제출함</span></div>
+      <div class="room" id="room-ceo"><span class="tag">대표실</span></div>
+    </div>
+    <div class="log" id="log">직원들이 자리에서 대기하고 있습니다.</div>
+  </div>
+
+  <div class="crew" id="crew"></div>
+
+  <div id="out"></div>
+
+<script>
+/* ────────── 직원 정보 ────────── */
+var CREW = [
+  { name:'재민',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:14, y:42}, room:'조사팀' },
+  { name:'다은',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:34, y:42}, room:'조사팀' },
+  { name:'승효',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:61, y:42}, room:'검증팀' },
+  { name:'이지혜', role:'팀장',       color:'var(--jihye)',     desk:{x:87, y:70}, room:'대표실' }
+];
+var TRAY = { x:87, y:18 };
+
+var els = {};
+var jobId = null, source = null, backTimers = {};
+
+/* ────────── 화면 만들기 ────────── */
+function buildOffice(){
+  var floor = document.getElementById('floor');
+  var crew = document.getElementById('crew');
+  CREW.forEach(function(p){
+    var c = document.createElement('div');
+    c.className = 'char';
+    c.style.color = p.color;
+    c.style.left = p.desk.x + '%';
+    c.style.top = p.desk.y + '%';
+    c.innerHTML = '<div class="head"></div><div class="body" style="background:' + p.color + '"></div>'
+                + '<div class="nm">' + p.name + '</div>';
+    floor.appendChild(c);
+
+    var card = document.createElement('div');
+    card.className = 'c';
+    card.innerHTML = '<div class="r">' + p.role + '</div><div class="n">' + p.name + '</div><div class="s">대기 중</div>';
+    crew.appendChild(card);
+
+    els[p.name] = { char:c, status:card.querySelector('.s'), info:p };
+  });
+}
+buildOffice();
+
+/* ────────── 캐릭터 상태 ────────── */
+function setState(name, state, text){
+  var e = els[name];
+  if(!e) return;
+
+  if(text){
+    e.status.textContent = text;
+    e.status.className = 's' + (state === 'working' ? ' working' : (state === 'done' ? ' done' : ''));
+  }
+
+  clearTimeout(backTimers[name]);
+  if(state === 'submit'){
+    // 제출함으로 걸어가서 결과를 놓고 자리로 돌아온다
+    e.char.classList.remove('act');
+    e.char.style.left = TRAY.x + '%';
+    e.char.style.top  = TRAY.y + '%';
+    backTimers[name] = setTimeout(function(){
+      e.char.style.left = e.info.desk.x + '%';
+      e.char.style.top  = e.info.desk.y + '%';
+    }, 1300);
+  } else {
+    e.char.style.left = e.info.desk.x + '%';
+    e.char.style.top  = e.info.desk.y + '%';
+    e.char.classList.toggle('act', state === 'working');
+  }
+}
+
+function resetCrew(){
+  CREW.forEach(function(p){ setState(p.name, 'idle', '대기 중'); });
+}
+
+function setLog(html){ document.getElementById('log').innerHTML = html; }
+
+/* ────────── 글 다듬기 ────────── */
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(text){
+  return esc(text)
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/^#{1,4}[ \t]*(.+?)[ \t]*$/gm, '<h3>$1</h3>')
+    .replace(/<\/h3>\n+/g, '</h3>')   // 소제목 뒤 빈 줄 정리 (간격은 CSS가 담당)
+    .replace(/\n+<h3>/g, '<h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .trim();
+}
+
+/* ────────── 진행 기록 그리기 ────────── */
+function addStep(ev){
+  var out = document.getElementById('out');
+  var div = document.createElement('div');
+  div.className = 'step' + (ev.isReport ? ' report' : '');
+  var html = '<div class="lb"><span class="who">' + esc(ev.agent) + ' — ' + esc(ev.label) + '</span>'
+           + '<span class="mt">' + esc(ev.model) + '</span></div>'
+           + '<div class="tx">' + fmt(ev.text) + '</div>';
+  if(ev.citations && ev.citations.length){
+    var seen = {}, links = [];
+    ev.citations.forEach(function(c){
+      if(!c.url || seen[c.url]) return;
+      seen[c.url] = 1;
+      var t = (c.title || c.url);
+      if(t.length > 34) t = t.slice(0,34) + '…';
+      links.push('<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' + esc(t) + '</a>');
+    });
+    if(links.length) html += '<div class="cits">확인한 자료 ' + links.length + '건 · ' + links.join(' · ') + '</div>';
+  }
+  div.innerHTML = html;
+  out.appendChild(div);
+  div.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function addBar(text){
+  var d = document.createElement('div');
+  d.className = 'roundbar';
+  d.textContent = '── ' + text + ' ──';
+  document.getElementById('out').appendChild(d);
+}
+
+function addNote(text, cls){
+  var d = document.createElement('div');
+  d.className = cls;
+  d.textContent = text;
+  document.getElementById('out').appendChild(d);
+  d.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+/* ────────── 대표 승인 화면 ────────── */
+function showApproval(ev){
+  var out = document.getElementById('out');
+  var box = document.createElement('div');
+  box.className = 'approve';
+  box.innerHTML =
+    '<h2>대표님 결재가 필요합니다</h2>' +
+    '<p>팀장 이지혜가 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
+    (ev.lastRound ? ' (이번이 마지막 보완 기회입니다)' : '') + '</p>' +
+    '<textarea placeholder="어떤 점이 부족한지 편하게 적어 주세요. 예) 경쟁사 가격이 빠졌어요"></textarea>' +
+    '<div class="btns">' +
+      '<button class="go" data-a="approve">승인합니다</button>' +
+      '<button class="ghost" data-a="ask">보완 요청하기</button>' +
+    '</div>';
+  out.appendChild(box);
+  box.scrollIntoView({ behavior:'smooth', block:'center' });
+  setLog('<b>대표님 결재 대기 중</b> — 승인하시면 업무가 끝납니다.');
+
+  var ta = box.querySelector('textarea');
+  var btns = box.querySelectorAll('button');
+
+  function lock(msg){
+    btns.forEach(function(b){ b.disabled = true; });
+    ta.disabled = true;
+    box.querySelector('p').textContent = msg;
+  }
+
+  btns.forEach(function(b){
+    b.onclick = function(){
+      var a = b.getAttribute('data-a');
+      if(a === 'ask' && ta.style.display !== 'block'){
+        ta.style.display = 'block';
+        ta.focus();
+        b.textContent = '이 내용으로 보완 요청';
+        return;
+      }
+      if(a === 'ask' && !ta.value.trim()){
+        ta.focus();
+        return;
+      }
+      lock(a === 'approve' ? '승인 처리했습니다.' : '보완 요청을 전달했습니다.');
+      decide(a === 'approve' ? 'approve' : 'revise', ta.value.trim());
+    };
+  });
+}
+
+function decide(action, feedback){
+  fetch('/api/decide', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ jobId: jobId, action: action, feedback: feedback })
+  }).catch(function(){ addNote('결재 전달에 실패했습니다. 인터넷 연결을 확인해 주세요.', 'err'); });
+}
+
+/* ────────── 업무 시작 ────────── */
+var btn = document.getElementById('btn');
+
+function finish(){
+  btn.disabled = false;
+  btn.textContent = '새 업무 지시하기';
+  document.getElementById('hint').textContent = '보통 2~5분 걸립니다. 창을 닫지 마세요.';
+  if(source){ source.close(); source = null; }
+}
+
+btn.onclick = function(){
+  var q = document.getElementById('q').value.trim();
+  if(!q){ document.getElementById('q').focus(); return; }
+
+  btn.disabled = true;
+  btn.textContent = '진행 중…';
+  document.getElementById('out').innerHTML = '';
+  resetCrew();
+  setLog('업무 지시서를 전달했습니다.');
+  if(source){ source.close(); source = null; }
+
+  fetch('/api/start', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ question: q })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.error) throw new Error(d.error);
+    jobId = d.jobId;
+    listen();
+  })
+  .catch(function(e){
+    addNote('시작하지 못했습니다: ' + e.message, 'err');
+    finish();
+  });
+};
+
+function listen(){
+  source = new EventSource('/api/stream/' + jobId);
+
+  source.onmessage = function(m){
+    var ev;
+    try { ev = JSON.parse(m.data); } catch(e){ return; }
+
+    if(ev.type === 'status'){
+      setState(ev.agent, ev.state, ev.text);
+      if(ev.state === 'working') setLog('<b>' + esc(ev.agent) + '</b> — ' + esc(ev.text));
+      else if(ev.state === 'submit') setLog('<b>' + esc(ev.agent) + '</b> — ' + esc(ev.text) + ' (제출함으로 이동)');
+    }
+    else if(ev.type === 'step')  addStep(ev);
+    else if(ev.type === 'round') addBar(ev.text);
+    else if(ev.type === 'await-approval') showApproval(ev);
+    else if(ev.type === 'revising'){
+      setLog('보완 요청을 반영해 다시 작업합니다.');
+      addNote(ev.text, 'done-note');
+    }
+    else if(ev.type === 'approved'){
+      addNote(ev.text, 'done-note');
+      setLog('업무 종료. 직원들이 자리로 돌아갔습니다.');
+      resetCrew();
+    }
+    else if(ev.type === 'error'){
+      addNote(ev.text, 'err');
+      setLog('문제가 생겨 업무가 중단됐습니다.');
+      resetCrew();
+      finish();
+    }
+    else if(ev.type === 'done'){
+      finish();
+    }
+  };
+
+  source.onerror = function(){
+    // 서버가 작업을 끝내고 연결을 닫은 정상 상황도 여기로 온다
+    if(source && source.readyState === 2) finish();
+  };
+}
+</script>
+</body>
+</html>
