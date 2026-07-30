@@ -51,50 +51,43 @@
   .badge{display:inline-block; min-width:16px; padding:1px 6px; margin-left:6px; border-radius:9px;
     background:var(--wood); color:#fff; font-size:10px; font-family:var(--mono); text-align:center; vertical-align:2px;}
 
-  .floor{position:relative; height:230px; border-radius:8px; overflow:hidden;
-    background:
-      linear-gradient(#EDE7D8 0 8px, transparent 8px) 0 0/100% 30px,
-      repeating-linear-gradient(90deg, #F3EEE1 0 29px, #ECE5D4 29px 30px);
+  .floor{position:relative; height:280px; border-radius:8px; overflow:hidden;
+    background:#EDEAE2 url('/assets/office-bg.jpg') center/cover no-repeat;
     border:1px solid var(--line);
   }
-  .room{position:absolute; top:8px; bottom:0; border-left:1.5px dashed var(--line);}
-  .room:first-child{border-left:none;}
-  .room .tag{position:absolute; top:6px; left:8px; font-size:11px; font-weight:600; padding:2px 8px 2px 0; letter-spacing:.02em;}
+  .room{position:absolute; top:0; bottom:0;}
+  .room .tag{position:absolute; top:6px; left:6px; font-size:10.5px; font-weight:700; padding:3px 8px;
+    letter-spacing:.02em; background:rgba(255,255,255,.88); border-radius:8px;}
   #room-research{left:0; width:32%;}
   #room-research .tag{color:var(--jaemin);}
-  #room-verify{left:33%; width:20%;}
+  #room-verify{left:32%; width:20%;}
   #room-verify .tag{color:var(--seunghyo);}
-  #room-lead{left:54%; width:21%;}
+  #room-lead{left:52%; width:23%;}
   #room-lead .tag{color:var(--jihye);}
-  #room-content{left:76%; width:24%;}
+  #room-content{left:75%; width:25%;}
   #room-content .tag{color:var(--haneul);}
 
-  .plant{position:absolute; bottom:6px; width:12px; height:12px;}
-  .plant .pot{position:absolute; bottom:0; left:1px; width:10px; height:6px; background:var(--wood); border-radius:2px;}
-  .plant .leaf{position:absolute; bottom:5px; left:0; width:12px; height:12px; background:var(--sage); border-radius:50% 50% 50% 0;}
-  #room-research .plant{right:8px;}
-  #room-verify .plant{right:8px;}
-  #room-lead .plant{right:8px;}
-  #room-content .plant{right:8px;}
-
-  .desk{position:absolute; width:32px; height:14px; margin-left:-16px; background:var(--wood); opacity:.4; border-radius:3px;}
-
-  .char{position:absolute; width:34px; margin-left:-17px; text-align:center;
+  .char{position:absolute; width:40px; margin-left:-20px; text-align:center;
     transition:left .9s ease, top .9s ease;}
-  .char .head{width:15px; height:15px; border-radius:50%; background:var(--skin); margin:0 auto 2px; position:relative; z-index:2;}
-  .char .body{width:24px; height:22px; border-radius:6px; margin:0 auto; position:relative; z-index:2;}
-  .char .nm{font-size:10px; color:var(--ink-soft); margin-top:3px; white-space:nowrap;}
-  .char.act .body{box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px currentColor;}
-  @keyframes walkBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
-  .char.walking .head, .char.walking .body{ animation:walkBounce .28s ease-in-out infinite; }
+  .char img.sprite{width:40px; display:block; margin:0 auto; position:relative; z-index:2;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));}
+  .char.flip img.sprite{transform:scaleX(-1);}
+  .char .dot{position:absolute; top:-3px; right:6px; width:9px; height:9px; border-radius:50%;
+    border:2px solid #fff; z-index:3; box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .char .nm{font-size:10px; color:var(--ink); font-weight:600; margin-top:1px; white-space:nowrap;
+    background:rgba(255,255,255,.85); border-radius:6px; padding:0 4px; display:inline-block;}
+  .char.act img.sprite{filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 0 5px currentColor);}
+  @keyframes walkBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
+  .char.walking img.sprite{ animation:walkBounce .26s ease-in-out infinite; }
 
   .bubble{position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:6px;
     background:#fff; border:1px solid var(--line); border-radius:8px; padding:5px 8px;
-    font-size:10px; line-height:1.35; color:var(--ink); width:max-content; max-width:118px;
-    box-shadow:0 2px 6px rgba(0,0,0,.06); opacity:0; transition:opacity .2s; pointer-events:none; z-index:3;}
+    font-size:10px; line-height:1.35; color:var(--ink); width:max-content; max-width:128px;
+    box-shadow:0 2px 6px rgba(0,0,0,.12); opacity:0; transition:opacity .2s; pointer-events:none; z-index:4;}
   .bubble:after{content:''; position:absolute; top:100%; left:50%; margin-left:-4px;
     border:4px solid transparent; border-top-color:#fff;}
   .char.talk .bubble{opacity:1;}
+  .office.bubbles-off .bubble{display:none;}
 
   .log{margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
     font-size:13px; color:var(--ink-soft); min-height:20px;}
@@ -189,7 +182,10 @@
     <div class="office">
       <div class="office-head">
         <h2>사무실</h2>
-        <button type="button" class="ghost small" id="feedOpenBtn">자료조사 과정 보기<span class="badge" id="feedBadge" style="display:none;">0</span></button>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="ghost small" id="bubbleToggleBtn">말풍선 끄기</button>
+          <button type="button" class="ghost small" id="feedOpenBtn">자료조사 과정 보기<span class="badge" id="feedBadge" style="display:none;">0</span></button>
+        </div>
       </div>
       <div class="floor" id="floor">
         <div class="room" id="room-research"><span class="tag">자료조사팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
@@ -235,6 +231,16 @@ var customNames = {};
 try { customNames = JSON.parse(localStorage.getItem(NAME_KEY) || '{}') || {}; } catch(e){ customNames = {}; }
 function displayName(orig){ return customNames[orig] || orig; }
 function dn(orig){ return esc(displayName(orig)); }
+// 서버가 만든 라벨 문자열(예: "검사 결과 — 조사팀1 1차") 안에 박혀 있는 원래 이름도
+// 바꾼 이름으로 치환한다 (직원 이름을 바꿔도 팝업/기록의 이름이 그대로였던 문제 수정)
+function applyNames(str){
+  var s = String(str == null ? '' : str);
+  CREW.forEach(function(p){
+    var custom = customNames[p.name];
+    if(custom) s = s.split(p.name).join(custom);
+  });
+  return s;
+}
 function saveCustomName(orig, newName){
   customNames[orig] = newName;
   try { localStorage.setItem(NAME_KEY, JSON.stringify(customNames)); } catch(e){}
@@ -242,11 +248,11 @@ function saveCustomName(orig, newName){
 
 /* ────────── 직원 정보 (내부 식별용 원래 이름은 그대로 사용, 화면 표시만 바뀜) ────────── */
 var CREW = [
-  { name:'재민',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:9,  y:58} },
-  { name:'다은',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:23, y:58} },
-  { name:'승효',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:43, y:58} },
-  { name:'이지혜', role:'팀장',       color:'var(--jihye)',     desk:{x:64, y:58} },
-  { name:'하늘',   role:'콘텐츠 담당', color:'var(--haneul)',   desk:{x:87, y:58} }
+  { name:'조사팀1',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:9,  y:58}, sprite:'man'   },
+  { name:'조사팀2',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:23, y:58}, sprite:'woman' },
+  { name:'검증팀1',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:43, y:58}, sprite:'man'   },
+  { name:'팀장1', role:'팀장',       color:'var(--jihye)',     desk:{x:64, y:58}, sprite:'woman' },
+  { name:'마케팅팀1',   role:'콘텐츠 담당', color:'var(--haneul)',   desk:{x:87, y:58}, sprite:'man'   }
 ];
 var HANDOFF = { x:60, y:58 }; // 팀장실 입구 — 결과를 전달하는 지점
 
@@ -261,18 +267,14 @@ function buildOffice(){
   var floor = document.getElementById('floor');
   var crew = document.getElementById('crew');
   CREW.forEach(function(p){
-    var desk = document.createElement('div');
-    desk.className = 'desk';
-    desk.style.left = p.desk.x + '%';
-    desk.style.top = (p.desk.y + 20) + '%';
-    floor.appendChild(desk);
-
     var c = document.createElement('div');
     c.className = 'char';
     c.style.color = p.color;
     c.style.left = p.desk.x + '%';
     c.style.top = p.desk.y + '%';
-    c.innerHTML = '<div class="bubble"></div><div class="head"></div><div class="body" style="background:' + p.color + '"></div>'
+    c.innerHTML = '<div class="bubble"></div>'
+                + '<img class="sprite" src="/assets/char-' + p.sprite + '.png" alt="">'
+                + '<span class="dot" style="background:' + p.color + '"></span>'
                 + '<div class="nm">' + esc(displayName(p.name)) + '</div>';
     floor.appendChild(c);
 
@@ -326,12 +328,14 @@ function setState(name, state, text, time){
     // 팀장실 입구까지 걸어가서 결과를 전달하고 자리로 돌아온다
     e.char.classList.remove('act');
     e.char.classList.add('walking');
+    e.char.classList.toggle('flip', HANDOFF.x < e.info.desk.x);
     e.char.style.left = HANDOFF.x + '%';
     e.char.style.top  = HANDOFF.y + '%';
     backTimers[name] = setTimeout(function(){
       e.char.classList.remove('walking');
       backTimers[name] = setTimeout(function(){
         e.char.classList.add('walking');
+        e.char.classList.toggle('flip', e.info.desk.x < HANDOFF.x);
         e.char.style.left = e.info.desk.x + '%';
         e.char.style.top  = e.info.desk.y + '%';
         backTimers[name] = setTimeout(function(){
@@ -422,11 +426,28 @@ function markUnread(){
 }
 document.getElementById('feedOpenBtn').onclick = openFeed;
 document.getElementById('feedClose').onclick = closeFeed;
+
+/* ────────── 말풍선 끄기/켜기 ────────── */
+var BUBBLE_KEY = 'bubblesOff_v1';
+var bubbleBtn = document.getElementById('bubbleToggleBtn');
+var officeBox = document.querySelector('.office');
+function applyBubbleState(off){
+  officeBox.classList.toggle('bubbles-off', off);
+  bubbleBtn.textContent = off ? '말풍선 켜기' : '말풍선 끄기';
+}
+var bubblesOff = false;
+try { bubblesOff = localStorage.getItem(BUBBLE_KEY) === '1'; } catch(e){}
+applyBubbleState(bubblesOff);
+bubbleBtn.onclick = function(){
+  bubblesOff = !bubblesOff;
+  applyBubbleState(bubblesOff);
+  try { localStorage.setItem(BUBBLE_KEY, bubblesOff ? '1' : '0'); } catch(e){}
+};
 feedOverlay.addEventListener('click', function(e){ if(e.target === feedOverlay) closeFeed(); });
 
 /* ────────── 진행 기록 그리기 ────────── */
 function stepHTML(ev){
-  var html = '<div class="lb"><span class="who">' + dn(ev.agent) + ' — ' + esc(ev.label) + '</span>'
+  var html = '<div class="lb"><span class="who">' + dn(ev.agent) + ' — ' + esc(applyNames(ev.label)) + '</span>'
            + '<span style="display:flex; gap:6px; align-items:center;">'
            + (ev.time ? '<span class="tm">' + esc(ev.time) + '</span>' : '')
            + '<span class="mt">' + esc(ev.model) + '</span></span></div>'
@@ -503,7 +524,7 @@ function showApproval(ev){
   box.className = 'approve';
   box.innerHTML =
     '<h2>대표님 결재가 필요합니다</h2>' +
-    '<p>팀장 ' + dn('이지혜') + '가 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
+    '<p>팀장 ' + dn('팀장1') + '이 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
     (ev.lastRound ? ' (이번이 마지막 보완 기회입니다)' : '') + '</p>' +
     '<textarea placeholder="어떤 점이 부족한지 편하게 적어 주세요. 예) 경쟁사 가격이 빠졌어요"></textarea>' +
     '<div class="btns">' +
