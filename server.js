@@ -1,20 +1,22 @@
 /**
- * 가상오피스 — AI 직원팀 서버
+ * 가상오피스 — AI 직원팀 서버 (신트라 방식: 고정 역할 + 총괄AI 구조)
  *
  * 구조 요약 (비전공자용):
- *   대표(사용자)가 업무를 시키면
- *   1) 팀장1(팀장)이 무엇을 알아봐야 하는지 목록을 만들고
- *   2) 조사팀1·조사팀2가 웹을 검색해 나눠서 조사하고
- *   3) 검증팀1이 그 조사가 믿을 만한지 검사하고 (미흡하면 다시 조사시킴)
- *   4) 팀장1이 전체를 검수해서 보고서를 만들고 (부족하면 팀에 재작업 지시)
- *   5) 마지막으로 대표에게 올려서 승인 또는 보완 요청을 받는다.
+ *   대표(사용자)가 업무를 시키면서, 어떤 담당자(들)를 쓸지 고른다.
+ *   1) 고른 담당자들이 서로 대화 없이 각자 독립적으로 일한다 (병렬로 동시에).
+ *      - 담당자마다 "지난 작업 기억"과 "대표님이 등록해 둔 전문 지식"을 참고해서 일한다.
+ *   2) 총괄AI가 모든 담당자의 결과물을 모아서 검사한다.
+ *      - 근거가 부실하면 그 담당자에게만 다시 시킨다 (다른 담당자는 그대로 둠).
+ *      - 통과하면 대표님 눈높이에 맞게 정리한 보고서 + 저장 위치 추천을 만든다.
+ *   3) 대표에게 올려서 승인 또는 보완 요청을 받는다.
  *
- * 진행 상황은 일이 벌어지는 즉시 화면으로 보내진다(SSE). 다 끝날 때까지 기다리지 않는다.
+ * 진행 상황은 일이 벌어지는 즉시 화면으로 보내진다(SSE).
  */
 
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
@@ -25,8 +27,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const OPENROUTER_URL = process.env.OPENROUTER_URL || "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-const MAX_RESEARCH_RETRY = 2; // 검증팀1이 미흡 판정했을 때 재조사 최대 횟수 (직원 1명당) — 너무 크면 대기 시간이 길어져 낮춤
-const MAX_MANAGER_RETRY = 1;  // 팀장1이 반려했을 때 재작업 최대 횟수 — 너무 크면 대기 시간이 길어져 낮춤
+const MAX_MANAGER_RETRY = 1;  // 총괄AI가 반려했을 때, 그 담당자만 다시 시키는 최대 횟수
 const MAX_CEO_ROUNDS = 3;     // 대표가 보완 요청할 수 있는 최대 횟수
 const JOB_TTL_MS = 60 * 60 * 1000; // 1시간 지나면 메모리에서 정리
 
@@ -56,13 +57,14 @@ function friendlyModel(entry) {
   return String(entry.provider || "").replace(/\s*\(무료\)\s*/, "").trim() || "AI";
 }
 
-/* ────────────────────── 모델 선택 / 호출 ────────────────────── */
+/* ────────────────────── 모델 선택(자동 전환) / 호출 ────────────────────── */
 
 /**
- * 역할에 배정된 풀(경제/품질)을 순서대로 시도할 후보 목록으로 만든다.
- * - 경제형 역할(조사팀1·조사팀2)은 무료 모델을 먼저 다 시도하고,
- *   전부 실패하면 품질 TOP5로 자동 전환한다(서비스가 멈추지 않게 하는 안전망).
- * - 조사팀1과 조사팀2가 같은 모델을 쓰지 않도록, 배정된 rank만큼 목록을 회전시킨다.
+ * 신트라처럼: 역할마다 "경제형"과 "품질형" 모델 풀을 두고, 상황에 맞게 자동으로 골라 쓴다.
+ * - 담당자(조사·작성 등)는 경제형(무료) 모델을 먼저 쓰고, 실패하면 자동으로 품질 TOP5로 전환한다.
+ * - 총괄AI(검수·판단)처럼 신뢰도가 중요한 역할은 처음부터 품질 TOP5를 쓴다.
+ * - 여러 담당자가 같은 모델만 쓰지 않도록, 배정된 rank만큼 순서를 회전시켜 자연히 다른 회사
+ *   모델(Anthropic/OpenAI/Google/DeepSeek 등)이 섞여 쓰이게 한다 — 신트라의 "모델 풀 자동 전환"과 동일한 방식.
  */
 function resolveCandidates(config, roleKey) {
   const assignment = config.역할배정[roleKey];
@@ -82,7 +84,6 @@ function resolveCandidates(config, roleKey) {
 
   if (assignment.pool === "경제") {
     const economy = config.경제형_모델.map((e) => ({ model: e.model, provider: e.provider }));
-    // 조사팀1(rank1)은 무료 1순위부터, 조사팀2(rank2)은 무료 2순위부터 시작 → 서로 다른 모델을 쓴다
     return rotate(economy, (assignment.rank || 1) - 1).concat(qualityFrom(assignment.rank));
   }
   return qualityFrom(assignment.rank);
@@ -90,10 +91,7 @@ function resolveCandidates(config, roleKey) {
 
 /**
  * OpenRouter 호출.
- *
  * 웹검색은 모델 이름 뒤에 ":online"을 붙이는 방식이 아니라 plugins 파라미터로 지정한다.
- * (무료 모델은 이름이 ":free"로 끝나므로 ":online"을 덧붙이면 "...:free:online"이라는
- *  존재하지 않는 이름이 되어 100% 실패하고, 매번 비싼 모델로 넘어가 버렸다.)
  */
 async function callOpenRouter(model, prompt, useSearch, maxTokens) {
   if (!OPENROUTER_API_KEY) {
@@ -109,7 +107,7 @@ async function callOpenRouter(model, prompt, useSearch, maxTokens) {
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 60000); // 1분 넘으면 포기하고 다음 모델로 (예전 2분 → 대기 시간 단축)
+  const timer = setTimeout(() => controller.abort(), 60000);
   let res;
   try {
     res = await fetch(OPENROUTER_URL, {
@@ -141,7 +139,6 @@ async function callOpenRouter(model, prompt, useSearch, maxTokens) {
   return { text: String(text).trim(), citations };
 }
 
-// 후보 목록을 순서대로 시도, 실패하면 다음 모델로 자동 대체
 async function callWithFallback(config, roleKey, prompt, useSearch, maxTokens) {
   const candidates = resolveCandidates(config, roleKey);
   let lastError = null;
@@ -150,7 +147,7 @@ async function callWithFallback(config, roleKey, prompt, useSearch, maxTokens) {
       const result = await callOpenRouter(entry.model, prompt, useSearch, maxTokens);
       return { text: result.text, citations: result.citations, modelUsed: friendlyModel(entry), modelId: entry.model };
     } catch (err) {
-      if (err.message === "API_KEY_MISSING") throw err; // 키가 없으면 다른 모델을 시도해도 소용없다
+      if (err.message === "API_KEY_MISSING") throw err;
       lastError = err;
       console.warn("[모델 실패 → 다음 모델로]", entry.model, "-", err.message);
     }
@@ -158,17 +155,187 @@ async function callWithFallback(config, roleKey, prompt, useSearch, maxTokens) {
   throw lastError || new Error("모든 모델 호출에 실패했습니다");
 }
 
+/* ────────────────────── 저장 공간 (기억 · 전문지식) ──────────────────────
+ * 주의: 이 서버가 무료 호스팅(Render 등)에 올라가 있으면, 재배포하거나 서버가
+ * 재시작될 때 이 파일들이 초기화될 수 있다. 지금은 "일단 동작하는" 수준으로 두고,
+ * 나중에 데이터가 중요해지면 진짜 데이터베이스로 옮기면 된다.
+ */
+const DATA_DIR = path.join(__dirname, "data");
+
+function ensureDataDir() {
+  try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { /* 이미 있으면 무시 */ }
+}
+function loadJSONFile(name, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name), "utf-8"));
+  } catch (e) {
+    return fallback;
+  }
+}
+function saveJSONFile(name, data) {
+  ensureDataDir();
+  try {
+    fs.writeFileSync(path.join(DATA_DIR, name), JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("[저장 실패]", name, e.message);
+  }
+}
+
+/* ────────────────────── 회원 · 로그인(세션) · 크레딧 ──────────────────────
+ * 상품형: 여러 고객이 각자 가입해서 자기 크레딧으로 사용한다.
+ * ⚠️ 지금은 users.json 파일에 저장한다. 무료 호스팅(Render)은 재배포 시 파일이
+ *    초기화될 수 있으므로, 실제 고객을 받기 전에 진짜 데이터베이스로 옮겨야 한다.
+ * ⚠️ 실제 결제(돈 받기)는 아직 없다. '충전'은 테스트용으로 크레딧만 올려준다.
+ *    나중에 이 자리에 토스페이먼츠 등 결제대행사(PG)를 연결한다. (아래 /api/topup 참고)
+ */
+const SESSION_SECRET = process.env.SESSION_SECRET || "virtual-office-dev-secret-change-me";
+const SIGNUP_BONUS = 300;   // 가입 시 무료로 주는 크레딧
+const TEST_TOPUP = 300;     // 테스트 충전 1회당 올려주는 크레딧
+const COST_PER_AGENT = 10;  // 담당자 1명당 차감 크레딧
+const COST_MANAGER = 20;    // 총괄AI 검수 차감 크레딧
+
+function loadUsers() { return loadJSONFile("users.json", {}); }
+function saveUsers(u) { saveJSONFile("users.json", u); }
+
+function hashPassword(password, salt) {
+  salt = salt || crypto.randomBytes(16).toString("hex");
+  const hash = crypto.scryptSync(String(password), salt, 64).toString("hex");
+  return { salt, hash };
+}
+function verifyPassword(password, salt, hash) {
+  try {
+    const h = crypto.scryptSync(String(password), salt, 64).toString("hex");
+    return h.length === hash.length && crypto.timingSafeEqual(Buffer.from(h), Buffer.from(hash));
+  } catch (e) { return false; }
+}
+function signValue(value) {
+  const sig = crypto.createHmac("sha256", SESSION_SECRET).update(value).digest("hex");
+  return value + "." + sig;
+}
+function unsignValue(signed) {
+  if (!signed) return null;
+  const i = signed.lastIndexOf(".");
+  if (i < 0) return null;
+  const value = signed.slice(0, i), sig = signed.slice(i + 1);
+  const expect = crypto.createHmac("sha256", SESSION_SECRET).update(value).digest("hex");
+  if (sig.length !== expect.length) return null;
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expect))) return null;
+  } catch (e) { return null; }
+  return value;
+}
+function parseCookies(req) {
+  const out = {};
+  const raw = req.headers.cookie;
+  if (!raw) return out;
+  raw.split(";").forEach((p) => {
+    const i = p.indexOf("=");
+    if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+  });
+  return out;
+}
+function setSession(res, userId) {
+  const token = encodeURIComponent(signValue(userId));
+  res.setHeader("Set-Cookie", "vo_session=" + token + "; HttpOnly; Path=/; Max-Age=" + (60 * 60 * 24 * 30) + "; SameSite=Lax");
+}
+function clearSession(res) {
+  res.setHeader("Set-Cookie", "vo_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax");
+}
+function currentUser(req) {
+  const userId = unsignValue(parseCookies(req).vo_session);
+  if (!userId) return null;
+  return loadUsers()[userId] || null;
+}
+function publicUser(u) {
+  return {
+    email: u.email,
+    credits: u.credits,
+    ceiling: u.ceiling || u.credits || 1,
+    usage: (u.usage || []).slice(-12).reverse(),
+  };
+}
+function jobCost(agentKeys) {
+  return agentKeys.length * COST_PER_AGENT + COST_MANAGER;
+}
+// 작업이 실제로 끝나(보고서가 나온) 시점에 한 번만 차감한다 — 도중에 오류가 나면 차감하지 않는다.
+function chargeUser(userId, amount, meta) {
+  const users = loadUsers();
+  const u = users[userId];
+  if (!u) return null;
+  u.credits = Math.max(0, (u.credits || 0) - amount);
+  u.usage = u.usage || [];
+  u.usage.push(Object.assign({ at: nowKR(), amount }, meta || {}));
+  if (u.usage.length > 60) u.usage = u.usage.slice(-60);
+  saveUsers(users);
+  return u.credits;
+}
+
+function getMemoryContext(userId, roleKey) {
+  const mem = loadJSONFile("memory.json", {});
+  const list = (mem[userId] && mem[userId][roleKey]) || [];
+  if (!list.length) return "";
+  const recent = list.slice(-5);
+  return (
+    "[지난 작업 기억 — 예전에 이 담당자가 했던 일이다. 참고만 하고, 이번 지시를 우선한다]\n" +
+    recent.map((m, i) => (i + 1) + ". (" + m.date + ") 질문: " + m.question + " → 그때 결과 요약: " + m.summary).join("\n") +
+    "\n\n"
+  );
+}
+function addMemory(userId, roleKey, question, summary) {
+  const mem = loadJSONFile("memory.json", {});
+  if (!mem[userId]) mem[userId] = {};
+  if (!mem[userId][roleKey]) mem[userId][roleKey] = [];
+  mem[userId][roleKey].push({
+    date: nowKR(),
+    question: String(question || "").slice(0, 200),
+    summary: String(summary || "").slice(0, 300),
+  });
+  if (mem[userId][roleKey].length > 8) mem[userId][roleKey] = mem[userId][roleKey].slice(-8);
+  saveJSONFile("memory.json", mem);
+}
+
+function getKnowledgeContext(userId, role) {
+  const kb = loadJSONFile("knowledge.json", {});
+  const list = (kb[userId] && kb[userId][role]) || [];
+  if (!list.length) return "";
+  let joined = list.map((k) => "▶ " + k.title + "\n" + k.text).join("\n\n");
+  if (joined.length > 6000) joined = joined.slice(0, 6000) + "\n...(자료가 길어 일부만 표시됨)";
+  return (
+    "[대표님이 미리 등록해 둔 전문 지식/참고자료 — 이 내용을 최우선 참고 자료로 활용한다]\n" +
+    joined + "\n\n"
+  );
+}
+
+// 브랜드 가이드 — 특정 담당자 전용이 아니라 '모든' 담당자가 공통으로 지켜야 하는 말투·금칙어·규칙.
+const BRAND_KEY = "브랜드가이드";
+function getBrandContext(userId) {
+  const kb = loadJSONFile("knowledge.json", {});
+  const list = (kb[userId] && kb[userId][BRAND_KEY]) || [];
+  if (!list.length) return "";
+  let joined = list.map((k) => "▶ " + k.title + "\n" + k.text).join("\n\n");
+  if (joined.length > 3000) joined = joined.slice(0, 3000) + "\n...(생략)";
+  return (
+    "[브랜드 가이드 — 모든 답변에서 반드시 지킬 말투·금칙어·표기 규칙. 이 규칙을 최우선으로 지킨다]\n" +
+    joined + "\n\n"
+  );
+}
+
 /* ────────────────────── 작업(job) 관리 + 실시간 전송 ────────────────────── */
 
 const jobs = new Map();
 
-function createJob(question) {
+function createJob(question, agentKeys, userId, cost, quick) {
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const job = {
     id,
     question,
-    events: [],      // 지금까지 일어난 일 (새로 접속하면 이걸 먼저 다시 보내준다)
-    listeners: [],   // 열려 있는 화면들
+    agentKeys,
+    userId,
+    cost: cost || 0,
+    quick: !!quick,
+    charged: false,
+    events: [],
+    listeners: [],
     finished: false,
     ceoResolve: null,
     createdAt: Date.now(),
@@ -177,7 +344,6 @@ function createJob(question) {
   return job;
 }
 
-// 서울 시각 기준 "오후 2:23" 같은 사람이 읽기 쉬운 시각 문자열
 function nowKR() {
   return new Date().toLocaleTimeString("ko-KR", {
     hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Seoul",
@@ -193,7 +359,6 @@ function emit(job, event) {
   }
 }
 
-// 대표(사용자)의 결정을 기다린다
 function waitForCeo(job) {
   return new Promise((resolve) => { job.ceoResolve = resolve; });
 }
@@ -208,118 +373,152 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-/* ────────────────────────── 직원별 작업 ────────────────────────── */
+/* ────────────────────────── 담당자(직원) 정의 ──────────────────────────
+ * 신트라와 동일하게: 역할이 고정되어 있고, 대표가 이번 업무에 어떤 담당자를 쓸지 고른다.
+ * 담당자끼리는 서로 대화하지 않는다 — 전부 총괄AI에게만 결과를 보고한다.
+ */
+const SPECIALISTS = {
+  // 신트라(Sintra) 12명 헬퍼와 1:1로 대응하는 한국어 버전 (Buddy→전략기획, Cassie→고객문의,
+  // Commet→이커머스, Dexter→재무분석, Emmie→이메일, Gigi→성장코치, Milli→영업관리,
+  // Penn→카피라이터, Scouty→채용, Seomi→SEO, Soshie→SNS콘텐츠, Vizzy→비서)
+  전략기획: {
+    label: "전략기획 담당",
+    roleKey: "전문_전략기획",
+    useSearch: true,
+    desc: "사업 방향, 신규 아이템, 성장 전략에 대한 조사와 제안을 한다.",
+  },
+  고객문의: {
+    label: "고객문의 응대 담당",
+    roleKey: "전문_고객문의",
+    useSearch: false,
+    desc: "고객이 보낼 법한 문의에 대한 답변 초안을 작성한다 (실제 발송은 하지 않는다).",
+  },
+  이커머스: {
+    label: "이커머스 운영 담당",
+    roleKey: "전문_이커머스",
+    useSearch: true,
+    desc: "온라인 판매채널(스마트스토어, 쿠팡 등) 운영과 관련된 정리·제안을 한다.",
+  },
+  재무분석: {
+    label: "재무분석 담당",
+    roleKey: "전문_재무분석",
+    useSearch: false,
+    desc: "매출·비용·수익성 같은 숫자를 정리하고 분석한다 (실제 회계 처리는 하지 않는다).",
+  },
+  이메일: {
+    label: "이메일 담당",
+    roleKey: "전문_이메일",
+    useSearch: false,
+    desc: "고객·거래처에 보낼 이메일 초안을 작성한다 (실제 발송은 하지 않는다).",
+  },
+  성장코치: {
+    label: "성장 코치",
+    roleKey: "전문_성장코치",
+    useSearch: false,
+    desc: "대표님의 업무 습관, 목표 관리, 우선순위 정리를 돕는다.",
+  },
+  영업관리: {
+    label: "영업관리 담당",
+    roleKey: "전문_영업관리",
+    useSearch: false,
+    desc: "영업 프로세스, 고객 관리, 제안서 구조를 정리한다.",
+  },
+  카피라이터: {
+    label: "카피라이터",
+    roleKey: "전문_카피라이터",
+    useSearch: false,
+    desc: "광고 문구, 제품 설명, 상세페이지 문구를 작성한다.",
+  },
+  채용: {
+    label: "채용 담당",
+    roleKey: "전문_채용",
+    useSearch: false,
+    desc: "채용 공고문 작성과 지원자 서류 검토 기준을 만든다.",
+  },
+  SEO: {
+    label: "SEO 담당",
+    roleKey: "전문_SEO",
+    useSearch: true,
+    desc: "검색 노출을 높이기 위한 키워드와 콘텐츠 구조를 제안한다.",
+  },
+  SNS콘텐츠: {
+    label: "SNS·블로그 콘텐츠 담당",
+    roleKey: "전문_SNS콘텐츠",
+    useSearch: false,
+    desc: "SNS나 블로그에 바로 올릴 수 있는 글 초안을 작성한다 (실제 게시는 하지 않는다).",
+  },
+  비서: {
+    label: "비서 (이미지 기획)",
+    roleKey: "전문_비서",
+    useSearch: false,
+    desc: "이미지가 필요한 곳에 쓸 이미지 기획안(장면 설명, 문구, 구도)을 글로 작성한다. " +
+      "실제 이미지 파일 생성은 다음 단계에서 별도 연결 예정.",
+  },
+};
+const SPECIALIST_KEYS = Object.keys(SPECIALISTS);
 
-// 무료/저가 모델일수록 지시가 약하면 영어·중국어·일본어가 섞여 나오는 경우가 있어,
-// 모든 프롬프트 맨 앞뒤에 한국어 전용 지시를 강하게 박아둔다.
+/* ────────────────────────── 프롬프트 ────────────────────────── */
+
 const 한국어전용 =
   "매우 중요한 규칙: 반드시 100% 한국어로만 답하세요. 영어 단어, 중국어, 일본어, 그 밖의 " +
   "다른 언어를 단 한 글자도 섞지 마세요. 사람·회사·제품의 고유명사도 가능하면 한글로 표기하세요 " +
   "(예: OpenAI → 오픈AI). 이 규칙을 어기면 안 됩니다.\n\n";
 
-const 조사지시 = (question, task, feedback) =>
-  한국어전용 +
-  "당신은 1인 사업가를 돕는 조사 담당 직원입니다. 아래 담당 항목을 웹에서 검색해 조사하세요.\n\n" +
-  "[대표의 질문]\n" + question + "\n\n" +
-  "[내가 맡은 항목]\n" + task + "\n\n" +
-  (feedback ? "[지난번에 지적받은 점 — 반드시 고쳐서 다시 조사]\n" + feedback + "\n\n" : "") +
-  "작성 규칙:\n" +
-  "- 항목마다 소제목을 달고, 확인한 사실만 2~4문장으로 쓴다.\n" +
-  "- 숫자나 시점이 있으면 반드시 함께 적는다 (예: 2026년 기준, 월 3만원).\n" +
-  "- 추측이면 '확인 안 됨'이라고 솔직히 쓴다. 지어내지 않는다.\n" +
-  "- 전문용어를 쓰지 말고, 처음 듣는 사람도 이해할 쉬운 말로 쓴다.\n\n" +
-  "다시 한번 강조: 답변 전체를 반드시 한국어로만 작성하세요.";
+function 전문가지시(spec, question, ceoFeedback, reworkFeedback, memoryCtx, knowledgeCtx, brandCtx) {
+  return (
+    한국어전용 +
+    "당신은 1인 사업가(대표)를 돕는 AI 직원이며, 담당 역할은 [" + spec.label + "]입니다.\n" +
+    "담당 설명: " + spec.desc + "\n" +
+    "중요: 다른 담당자와 이야기를 나누지 않습니다. 오직 당신의 담당 범위 안에서만, 아는 만큼 정확하게 답하세요.\n\n" +
+    (brandCtx || "") +
+    knowledgeCtx +
+    memoryCtx +
+    "[대표의 이번 지시]\n" + question + "\n\n" +
+    (ceoFeedback ? "[대표님이 직접 보완 요청한 내용 — 반드시 반영]\n" + ceoFeedback + "\n\n" : "") +
+    (reworkFeedback ? "[총괄AI의 보완 지시 — 반드시 반영해서 다시 작성]\n" + reworkFeedback + "\n\n" : "") +
+    "작성 규칙:\n" +
+    "- 담당 역할 범위 안에서만 답한다. 다른 담당자 몫의 일은 하지 않는다.\n" +
+    "- 확인된 사실만 쓰고, 확실하지 않으면 '확인 안 됨'이라고 솔직히 쓴다. 지어내지 않는다.\n" +
+    "- 숫자나 시점이 있으면 반드시 함께 적는다.\n" +
+    "- 전문용어 없이, 처음 듣는 사람도 이해할 쉬운 말로 쓴다.\n" +
+    "- 실제로 메일을 보내거나 SNS에 게시하거나 결제·구독을 하지 않는다. 초안/제안만 작성한다.\n\n" +
+    "다시 한번 강조: 반드시 100% 한국어로만 작성하세요."
+  );
+}
 
-const 검증지시 = (task, text, urls) =>
-  한국어전용 +
-  "당신은 동료의 조사 결과를 검사하는 검증 담당 직원입니다. 아래를 검사하세요.\n\n" +
-  "검사 기준: (1) 맡은 항목을 실제로 다 다뤘는가 (2) 출처가 붙어 있는가 " +
-  "(3) 근거 없이 단정한 부분이 없는가 (4) 숫자·시점이 빠지지 않았는가\n\n" +
-  "중요: 대표님을 오래 기다리게 하면 안 됩니다. 완벽하지 않아도, 대표가 대략적인 판단을 " +
-  "내리기에 충분하면 통과(pass)시키세요. retry는 정말 심각한 문제(항목을 아예 안 다룸, " +
-  "출처가 하나도 없음, 완전히 지어낸 것으로 보임)가 있을 때만 쓰세요. 애매하면 통과시키세요.\n\n" +
-  "[맡은 항목]\n" + task + "\n\n[조사 결과]\n" + text + "\n\n[붙어 있는 출처]\n" + (urls || "없음") + "\n\n" +
-  "JSON만 출력하세요. 다른 말은 쓰지 마세요. reason과 instruction 값도 반드시 한국어로만 쓰세요.\n" +
-  '{"status":"pass 또는 retry","reason":"판정 이유를 쉬운 말 한 문장으로","instruction":"retry라면 무엇을 어떻게 더 조사해야 하는지 구체적으로. pass면 빈 문자열"}';
+function 총괄검수지시(question, ceoFeedback, outputs) {
+  const 섹션 = outputs
+    .map((o, i) => "[" + (i + 1) + ". 담당자 키 \"" + o.key + "\" (" + o.label + ")의 결과물]\n" + o.text)
+    .join("\n\n");
+  const keyList = outputs.map((o) => "\"" + o.key + "\"").join(", ");
 
-const 콘텐츠지시 = (question, report) =>
-  한국어전용 +
-  "당신은 1인 사업가를 돕는 콘텐츠 담당 직원입니다. 대표님이 방금 승인한 보고서를 바탕으로, " +
-  "대표님이 SNS나 블로그에 바로 올릴 수 있는 짧은 홍보문구 초안을 만드세요.\n\n" +
-  "[대표의 원래 질문]\n" + question + "\n\n[승인된 보고서]\n" + report + "\n\n" +
-  "작성 규칙:\n" +
-  "- 전체 5~8문장 이내로 짧게.\n" +
-  "- 과장·확인 안 된 숫자 금지. 보고서에 있는 내용만 사용한다.\n" +
-  "- 해시태그 3~5개를 마지막 줄에 붙인다.\n" +
-  "- 전문용어 없이 쉬운 말로. 대표님이 그대로 복사해서 쓸 수 있는 완성된 문장으로 쓴다.\n\n" +
-  "다시 한번 강조: 반드시 한국어로만 작성하세요.";
-
-/** 직원 1명: 조사 → 검증팀1 검증 → (미흡하면) 재조사 */
-async function researchWithVerification(job, config, agentName, researchRoleKey, task, question, shortLabel) {
-  let feedback = "";
-  let lastText = "";
-  let lastCitations = [];
-  const 짧게 = shortLabel ? shortLabel + " " : "";
-
-  for (let attempt = 1; attempt <= MAX_RESEARCH_RETRY; attempt++) {
-    emit(job, {
-      type: "status",
-      agent: agentName,
-      state: "working",
-      text: attempt === 1 ? 짧게 + "조사 중" : 짧게 + attempt + "차 재조사 중",
-    });
-
-    const result = await callWithFallback(config, researchRoleKey, 조사지시(question, task, feedback), true, 2000);
-    lastText = result.text;
-    lastCitations = result.citations;
-
-    emit(job, { type: "status", agent: agentName, state: "submit", text: "조사 결과 제출" });
-    emit(job, {
-      type: "step",
-      agent: agentName,
-      label: attempt === 1 ? "조사 결과" : "조사 결과 (" + attempt + "차 재조사)",
-      model: result.modelUsed,
-      text: lastText,
-      citations: lastCitations,
-    });
-
-    // 검증팀1 검증
-    emit(job, { type: "status", agent: "검증팀1", state: "working", text: agentName + " 결과 검사 중" });
-    let verifyJson;
-    let verifyModel = "AI";
-    try {
-      const verifyResult = await callWithFallback(
-        config, "검증_검증팀1",
-        검증지시(task, lastText, lastCitations.map((c) => c.url).join(", ")),
-        false, 800
-      );
-      verifyModel = verifyResult.modelUsed;
-      verifyJson = parseJSON(verifyResult.text) || { status: "pass", reason: "검사 결과를 읽지 못해 통과 처리했습니다.", instruction: "" };
-    } catch (err) {
-      if (err.message === "API_KEY_MISSING") throw err;
-      verifyJson = { status: "pass", reason: "검사를 진행하지 못해 통과 처리했습니다.", instruction: "" };
-    }
-
-    emit(job, { type: "status", agent: "검증팀1", state: "submit", text: "검사 완료" });
-    emit(job, {
-      type: "step",
-      agent: "검증팀1",
-      label: "검사 결과 — " + agentName + " " + attempt + "차 (" + (verifyJson.status === "pass" ? "통과" : "다시 조사") + ")",
-      model: verifyModel,
-      text: verifyJson.reason + (verifyJson.status !== "pass" && verifyJson.instruction ? "\n\n보완 요청: " + verifyJson.instruction : ""),
-    });
-
-    if (verifyJson.status === "pass") {
-      emit(job, { type: "status", agent: agentName, state: "done", text: "조사 완료" });
-      return { text: lastText, citations: lastCitations, verified: true };
-    }
-
-    feedback = verifyJson.instruction || "출처를 더 확실히 붙이고, 빠진 항목을 채워 주세요.";
-    if (attempt === MAX_RESEARCH_RETRY) {
-      emit(job, { type: "status", agent: agentName, state: "done", text: "조사 완료(일부 부족)" });
-      return { text: lastText, citations: lastCitations, verified: false };
-    }
-  }
+  return (
+    한국어전용 +
+    "당신은 AI 직원팀을 총괄하는 '총괄AI'입니다. 아래는 각 담당자가 서로 대화 없이 독립적으로 " +
+    "작업한 결과물입니다. 당신이 할 일:\n" +
+    "1) 신빙성 검사 — 근거 없이 단정하거나 출처가 부실한 부분이 있는지 확인한다.\n" +
+    "2) 대표님(전문 지식이 없는 1인 사업가) 눈높이에 맞게 정리해서 설명한다.\n" +
+    "3) 결과물을 어디에 보관하면 좋을지 추천한다 (파일 보관 / 노션 정리 / 디스코드 공유 중 성격에 맞는 것 하나).\n" +
+    "4) 담당자별로 통과(approved:true)/반려(approved:false) 판정을 내린다. 대표님을 오래 기다리게 하면 " +
+    "안 되므로, 완벽하지 않아도 대표가 판단하기에 충분하면 통과시킨다. 핵심 질문을 아예 다루지 않았거나 " +
+    "완전히 지어낸 것으로 보일 때만 반려한다.\n\n" +
+    "[대표의 이번 지시]\n" + question + "\n\n" +
+    (ceoFeedback ? "[대표님 보완 요청]\n" + ceoFeedback + "\n\n" : "") +
+    섹션 + "\n\n" +
+    "반드시 아래 담당자 키만 그대로 사용해서 verdicts를 채우세요: " + keyList + "\n" +
+    "JSON만 출력하세요. 다른 말은 쓰지 마세요. 모든 문자열 값은 100% 한국어로 쓰세요.\n" +
+    '{"verdicts": { "담당자키": {"approved": true 또는 false, "feedback": "반려 시 구체적 보완 지시, 통과면 빈 문자열"} },\n' +
+    ' "storage": "파일 보관 / 노션 정리 / 디스코드 공유 중 하나와 이유 한 문장",\n' +
+    ' "report": "모든 담당자가 통과했을 때만 작성. 아래 형식을 지킬 것. 통과 전이면 빈 문자열" }\n\n' +
+    "report 작성 형식 (모두 통과했을 때만):\n" +
+    "## 결론\n(대표가 어떻게 하면 좋은지 2~3문장으로 먼저 말한다)\n\n" +
+    "## 담당자별 결과 요약\n(담당자마다 핵심만 3~4줄로. 어느 담당자가 조사·작성했는지 이름을 밝힌다)\n\n" +
+    "## 대표님이 지금 결정하실 것\n(선택지를 2~3개 제시하고 각각의 장단점을 한 줄로)\n\n" +
+    "## 이런 대안도 있어요\n(대표가 미처 생각 못 했을 다른 방향의 아이디어를 정확히 3가지, 각 한 줄로)\n\n" +
+    "## 저장 추천\n(파일/노션/디스코드 중 무엇이 좋은지와 이유)\n\n" +
+    "## 아직 확인 못 한 것\n(모르는 건 솔직히 적는다)\n\n" +
+    "report 규칙: 전문용어·영어약어 금지, 쉬운 말로. 대표를 '대표님'으로 부른다. 100% 한국어로만 작성."
+  );
 }
 
 /* ────────────────────────── 전체 업무 진행 ────────────────────────── */
@@ -327,157 +526,135 @@ async function researchWithVerification(job, config, agentName, researchRoleKey,
 async function runPipeline(job) {
   const config = loadModelConfig();
   const question = job.question;
+  const agentKeys = job.agentKeys;
   let ceoFeedback = "";
 
   try {
     for (let round = 1; round <= MAX_CEO_ROUNDS; round++) {
       emit(job, { type: "round", round, text: round === 1 ? "업무 시작" : "대표님 보완 요청 반영 (" + round + "차)" });
 
-      // 1) 팀장1 — 무엇을 알아봐야 하는지 목록 만들기
-      emit(job, { type: "status", agent: "팀장1", state: "working", text: "업무 지시서 작성 중" });
-      const checklistResult = await callWithFallback(
-        config, "체크리스트_팀장",
-        한국어전용 +
-        "당신은 1인 사업가(대표)를 돕는 AI 팀의 팀장입니다. 대표가 아래 질문을 시켰습니다.\n\n" +
-        "[대표의 질문]\n" + question + "\n\n" +
-        (ceoFeedback ? "[대표님이 직접 보완을 요청한 내용 — 이번엔 반드시 반영]\n" + ceoFeedback + "\n\n" : "") +
-        "가장 중요한 원칙: 대표가 실제로 물어본 것에만 답하세요. " +
-        "질문에 '사업', '창업', '시작해도 될까', '수익성' 같은 말이 없다면, " +
-        "임의로 '이 사업이 돈이 될까'로 바꿔서 해석하지 마세요. " +
-        "예를 들어 '강북횡단선 언제 완공돼?'라고 물으면 완공 예정 시기·현재 공사 진행 상황만 조사하면 되고, " +
-        "그걸 사업 아이템으로 오해해서 시장성·수익성을 조사하면 안 됩니다. " +
-        "반대로 정말 '이 사업 아이템이 괜찮을지' 물었을 때만 시장 규모·경쟁·수익성 같은 사업 조사를 하세요.\n\n" +
-        "위 원칙에 따라, 이 질문에 제대로 답하려면 무엇을 조사해야 하는지 핵심 항목을 4개로 정리하세요.\n" +
-        "규칙: 번호를 매긴 4줄 목록만 출력. 각 줄은 한 문장. 전문용어 금지. 설명이나 인사말 없이 목록만. 반드시 한국어로만 작성.",
-        false, 700
-      );
-      const checklist = checklistResult.text;
-      emit(job, { type: "status", agent: "팀장1", state: "submit", text: "지시서 전달" });
-      emit(job, {
-        type: "step", agent: "팀장1", label: "업무 지시서",
-        model: checklistResult.modelUsed, text: checklist,
-      });
+      // 담당자별 최신 결과물 (재작업 시 해당 담당자만 갱신됨)
+      const results = {};
+      for (const key of agentKeys) results[key] = null;
+      let reworkFeedback = {}; // key -> 총괄AI 보완 지시
 
-      // 2~4) 조사 → 검증 → 팀장 검수 (반려되면 재작업)
-      let managerFeedback = "";
-      let finalReport = "";
-      let allCitations = [];
-
-      for (let mAttempt = 1; mAttempt <= MAX_MANAGER_RETRY + 1; mAttempt++) {
-        const 공통 = (부분) =>
-          "전체 지시서:\n" + checklist + "\n\n내가 맡은 부분: " + 부분 +
-          (ceoFeedback ? "\n\n대표님 요청사항: " + ceoFeedback : "") +
-          (managerFeedback ? "\n\n팀장 보완 지시: " + managerFeedback : "");
-
-        const [w1, w2] = await Promise.all([
-          researchWithVerification(job, config, "조사팀1", "조사_조사팀1", 공통("1번과 2번 항목"), question, "1번·2번 항목"),
-          researchWithVerification(job, config, "조사팀2", "조사_조사팀2", 공통("3번과 4번 항목"), question, "3번·4번 항목"),
-        ]);
-
-        emit(job, { type: "status", agent: "팀장1", state: "working", text: "전체 검수 중" });
-        const reviewResult = await callWithFallback(
-          config, "최종승인_팀장1",
-          한국어전용 +
-          "당신은 1인 사업가(대표)를 돕는 AI 팀의 팀장입니다. 팀원 두 명의 조사 결과를 검수하고, " +
-          "대표에게 올릴 보고서를 작성하세요. 대표는 개발이나 전문 분야를 모르는 1인 사업가입니다.\n\n" +
-          "[대표의 질문]\n" + question + "\n\n" +
-          (ceoFeedback ? "[대표님 보완 요청]\n" + ceoFeedback + "\n\n" : "") +
-          "[조사팀1의 조사" + (w1.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w1.text + "\n\n" +
-          "[조사팀2의 조사" + (w2.verified ? " (검사 통과)" : " (일부 부족)") + "]\n" + w2.text + "\n\n" +
-          "판단 기준: 대표의 질문에 실제로 답이 되는가, 근거가 있는가, 대표가 이걸 보고 결정을 내릴 수 있는가.\n" +
-          "중요: 대표님을 오래 기다리게 하면 안 됩니다. 완벽하지 않아도 대표가 판단하기에 충분하면 " +
-          "승인(approved:true)하고, 부족한 부분은 report의 '아직 확인 못 한 것'에 솔직히 적으세요. " +
-          "정말 핵심 질문에 아예 답이 안 되는 경우에만 반려하세요.\n\n" +
-          "JSON만 출력하세요. 다른 말은 쓰지 마세요.\n" +
-          '{"approved":true 또는 false,' +
-          '"feedback":"반려할 때 팀원에게 줄 구체적 보완 지시. 승인이면 빈 문자열",' +
-          '"report":"승인일 때만 작성. 아래 형식을 반드시 지킬 것"}\n\n' +
-          "report 작성 형식 (승인일 때만):\n" +
-          "## 결론\n(대표가 어떻게 하면 좋은지 2~3문장으로 먼저 말한다)\n\n" +
-          "## 왜 그렇게 판단했나\n(근거를 3~4개 항목으로. 숫자와 시점을 넣는다)\n\n" +
-          "## 대표님이 지금 결정하실 것\n(선택지를 2~3개 제시하고 각각의 장단점을 한 줄로)\n\n" +
-          "## 아직 확인 못 한 것\n(모르는 건 솔직히 적는다)\n\n" +
-          "report 규칙: 전문용어·영어약어 금지. 쉬운 말로. 대표를 '대표님'으로 부른다. " +
-          "report와 feedback 모두 반드시 100% 한국어로만 작성 (영어·중국어·일본어 금지).",
-          false, 2500
+      async function runSpecialist(key, isRework) {
+        const spec = SPECIALISTS[key];
+        emit(job, { type: "status", agent: key, state: "working", text: isRework ? "보완 작업 중" : "작업 중" });
+        const prompt = 전문가지시(
+          spec, question, ceoFeedback, reworkFeedback[key] || "",
+          getMemoryContext(job.userId, spec.roleKey), getKnowledgeContext(job.userId, key),
+          getBrandContext(job.userId)
         );
+        const result = await callWithFallback(config, spec.roleKey, prompt, spec.useSearch, 1800);
+        results[key] = { text: result.text, citations: result.citations, modelUsed: result.modelUsed };
+        emit(job, { type: "status", agent: key, state: "submit", text: "결과 제출" });
+        emit(job, {
+          type: "step", agent: key,
+          label: spec.label + (isRework ? " 결과 (보완본)" : " 결과"),
+          model: result.modelUsed, text: result.text, citations: result.citations,
+          kind: isRework ? "rework" : "result",
+        });
+        emit(job, { type: "status", agent: key, state: "done", text: "검수 대기" });
+      }
 
+      // 1) 고른 담당자들이 서로 대화 없이 동시에 작업
+      await Promise.all(agentKeys.map((key) => runSpecialist(key, false)));
+
+      // 2) 총괄AI 검수 (반려된 담당자만 재작업, 반복)
+      let finalReport = "";
+      let storageNote = "";
+      let allCitations = agentKeys.reduce((acc, key) => acc.concat(results[key].citations || []), []);
+
+      if (job.quick) {
+        // 빠른 모드: 총괄AI 검수를 건너뛰고 담당자 결과를 그대로 모아 전달한다 (아이디어를 빨리 받을 때).
+        emit(job, { type: "status", agent: "총괄AI", state: "working", text: "빠른 정리 중" });
+        finalReport =
+          "## 빠른 모드 결과 (검수 생략)\n" +
+          "아이디어를 빠르게 받는 모드라, 총괄AI의 정식 신빙성 검수는 하지 않았습니다. 참고용으로만 봐 주세요.\n\n" +
+          agentKeys.map((key) => "## " + SPECIALISTS[key].label + "\n" + results[key].text).join("\n\n");
+        emit(job, { type: "status", agent: "총괄AI", state: "submit", text: "대표님께 전달" });
+        emit(job, {
+          type: "step", agent: "총괄AI", label: "빠른 모드 결과 (검수 생략)",
+          model: "빠른 모드", text: finalReport, citations: allCitations, isReport: true,
+        });
+      } else {
+       for (let mAttempt = 1; mAttempt <= MAX_MANAGER_RETRY + 1; mAttempt++) {
+        emit(job, { type: "status", agent: "총괄AI", state: "working", text: "전체 결과 검수 중" });
+
+        const outputs = agentKeys.map((key) => ({ key, label: SPECIALISTS[key].label, text: results[key].text }));
+        const reviewResult = await callWithFallback(config, "총괄AI_검수", 총괄검수지시(question, ceoFeedback, outputs), false, 2600);
         const reviewJson = parseJSON(reviewResult.text);
-        allCitations = [...w1.citations, ...w2.citations];
+        allCitations = agentKeys.reduce((acc, key) => acc.concat(results[key].citations || []), []);
 
-        const 반려 = reviewJson && reviewJson.approved === false && mAttempt <= MAX_MANAGER_RETRY;
-        if (반려) {
-          managerFeedback = reviewJson.feedback || "근거를 더 보강해 주세요.";
-          emit(job, { type: "status", agent: "팀장1", state: "submit", text: "반려, 재작업 지시" });
+        const verdicts = (reviewJson && reviewJson.verdicts) || {};
+        const rejected = agentKeys.filter((key) => verdicts[key] && verdicts[key].approved === false);
+        const canRetry = mAttempt <= MAX_MANAGER_RETRY && rejected.length > 0;
+
+        if (canRetry) {
+          emit(job, { type: "status", agent: "총괄AI", state: "submit", text: "일부 보완 지시" });
+          const 사유목록 = rejected.map((key) => SPECIALISTS[key].label + ": " + (verdicts[key].feedback || "근거 보강 필요")).join("\n");
           emit(job, {
-            type: "step", agent: "팀장1", label: "검수 결과 — 다시 작업 (" + mAttempt + "차)",
-            model: reviewResult.modelUsed, text: managerFeedback,
+            type: "step", agent: "총괄AI",
+            label: "총괄 검수 결과 (" + mAttempt + "차) — 일부 보완 요청",
+            model: reviewResult.modelUsed, text: 사유목록, kind: "review",
           });
-          emit(job, { type: "status", agent: "조사팀1", state: "idle", text: "재작업 대기" });
-          emit(job, { type: "status", agent: "조사팀2", state: "idle", text: "재작업 대기" });
+          rejected.forEach((key) => {
+            reworkFeedback[key] = verdicts[key].feedback || "근거를 더 확실히 밝혀서 다시 작성해 주세요.";
+          });
+          await Promise.all(rejected.map((key) => runSpecialist(key, true)));
           continue;
         }
 
-        // 보고서 만들기.
-        // 팀장이 재작업 한도를 다 쓰고도 만족하지 못한 경우가 있어서, 그때도 대표님이
-        // 읽을 수 있는 형태로 정리해서 올린다. (예전에는 내부 데이터가 그대로 노출됐다)
+        emit(job, { type: "status", agent: "총괄AI", state: "submit", text: "대표님께 보고" });
+        storageNote = (reviewJson && reviewJson.storage) || "";
+
         let 미흡 = false;
         if (reviewJson && reviewJson.report && String(reviewJson.report).trim()) {
           finalReport = String(reviewJson.report).trim();
-        } else if (reviewJson) {
+        } else {
           미흡 = true;
           finalReport =
-            "## 결론\n팀장이 정해진 재작업 횟수 안에 만족할 만한 수준까지 끌어올리지 못했습니다. " +
-            "아래는 지금까지 조사된 내용이며, 부족한 부분을 함께 적었습니다.\n\n" +
-            "## 팀장이 아직 부족하다고 본 점\n" + (reviewJson.feedback || "구체적인 사유가 전달되지 않았습니다.") + "\n\n" +
-            "## 조사팀1이 조사한 내용\n" + w1.text + "\n\n" +
-            "## 조사팀2이 조사한 내용\n" + w2.text + "\n\n" +
-            "## 대표님이 지금 결정하실 것\n" +
-            "- 보완 요청: 위 부족한 점을 적어 다시 시키실 수 있습니다.\n" +
+            "## 결론\n총괄AI가 정해진 재작업 횟수 안에 만족할 만한 수준까지 끌어올리지 못했습니다. " +
+            "아래는 지금까지 나온 결과이며, 부족한 부분을 함께 적었습니다.\n\n" +
+            agentKeys.map((key) => "## " + SPECIALISTS[key].label + "의 결과\n" + results[key].text).join("\n\n") +
+            "\n\n## 대표님이 지금 결정하실 것\n" +
+            "- 보완 요청: 부족한 점을 적어 다시 시키실 수 있습니다.\n" +
             "- 이대로 승인: 지금 내용만으로 판단하고 마무리합니다.";
-        } else {
-          // 팀장이 정해진 형식을 안 지킨 경우 — 글 자체는 쓸 수 있으니 그대로 올린다
-          finalReport = reviewResult.text;
         }
+        if (storageNote) finalReport += "\n\n## 저장 추천\n" + storageNote;
 
-        emit(job, { type: "status", agent: "팀장1", state: "submit", text: "대표님께 보고" });
         emit(job, {
-          type: "step", agent: "팀장1",
-          label: 미흡 ? "팀장 검수 — 일부 부족한 상태로 올림" : "팀장 검수 완료 — 대표님께 올림",
+          type: "step", agent: "총괄AI",
+          label: 미흡 ? "총괄 검수 — 일부 부족한 상태로 올림" : "총괄 검수 완료 — 대표님께 올림",
           model: reviewResult.modelUsed, text: finalReport, citations: allCitations, isReport: true,
         });
         break;
+       }
       }
 
-      // 5) 대표(사용자) 최종 승인
-      ["조사팀1", "조사팀2", "검증팀1", "팀장1"].forEach((n) =>
-        emit(job, { type: "status", agent: n, state: "done", text: "승인 대기" })
-      );
-      emit(job, {
-        type: "await-approval",
-        round,
-        lastRound: round >= MAX_CEO_ROUNDS,
-        report: finalReport,
-        citations: allCitations,
-      });
+      // 보고서가 실제로 나온 시점에 딱 한 번만 크레딧을 차감한다 (도중에 오류가 나면 차감 안 함).
+      if (!job.charged && job.userId) {
+        const remaining = chargeUser(job.userId, job.cost, {
+          agents: agentKeys.length,
+          question: String(question).slice(0, 60),
+        });
+        job.charged = true;
+        if (remaining !== null) emit(job, { type: "credit", credits: remaining, cost: job.cost });
+      }
+
+      // 3) 대표(사용자) 최종 승인
+      ["총괄AI"].concat(agentKeys).forEach((n) => emit(job, { type: "status", agent: n, state: "done", text: "승인 대기" }));
+      emit(job, { type: "await-approval", round, lastRound: round >= MAX_CEO_ROUNDS, report: finalReport, citations: allCitations });
 
       const decision = await waitForCeo(job);
 
       if (decision.action === "approve") {
-        // 승인된 보고서로 콘텐츠팀(마케팅팀1)이 바로 쓸 수 있는 홍보문구 초안을 만든다
-        emit(job, { type: "status", agent: "마케팅팀1", state: "working", text: "승인된 내용으로 콘텐츠 초안 작성 중" });
-        try {
-          const contentResult = await callWithFallback(config, "콘텐츠_마케팅팀1", 콘텐츠지시(question, finalReport), false, 900);
-          emit(job, { type: "status", agent: "마케팅팀1", state: "submit", text: "콘텐츠 초안 제출" });
-          emit(job, {
-            type: "step", agent: "마케팅팀1", label: "콘텐츠팀 초안 — 바로 쓰는 홍보문구",
-            model: contentResult.modelUsed, text: contentResult.text, isContent: true,
-          });
-        } catch (err) {
-          if (err.message === "API_KEY_MISSING") throw err;
-          console.warn("[콘텐츠 초안 생략]", err.message);
-        }
-        emit(job, { type: "status", agent: "마케팅팀1", state: "done", text: "대기 중" });
+        // 승인된 내용을 각 담당자의 "기억"으로 남긴다 (다음에 이 담당자를 쓸 때 참고됨)
+        agentKeys.forEach((key) => {
+          const spec = SPECIALISTS[key];
+          if (job.userId) addMemory(job.userId, spec.roleKey, question, results[key].text.slice(0, 300));
+        });
         emit(job, { type: "approved", text: "대표님이 승인하셨습니다. 업무를 종료합니다." });
         break;
       }
@@ -519,14 +696,83 @@ app.get("/api/rankings", (req, res) => {
   res.json(loadModelConfig());
 });
 
+app.get("/api/agents", (req, res) => {
+  res.json(SPECIALIST_KEYS.map((key) => ({ key, label: SPECIALISTS[key].label, desc: SPECIALISTS[key].desc })));
+});
+
+/* ── 회원 · 로그인 ── */
+app.post("/api/signup", (req, res) => {
+  const email = String((req.body && req.body.email) || "").trim().toLowerCase();
+  const password = String((req.body && req.body.password) || "");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: "이메일 형식이 올바르지 않습니다." });
+  if (password.length < 6) return res.status(400).json({ error: "비밀번호는 6자 이상으로 정해 주세요." });
+
+  const users = loadUsers();
+  if (Object.values(users).some((u) => u.email === email)) return res.status(409).json({ error: "이미 가입된 이메일입니다." });
+
+  const { salt, hash } = hashPassword(password);
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  users[id] = { id, email, salt, hash, credits: SIGNUP_BONUS, ceiling: SIGNUP_BONUS, usage: [], createdAt: nowKR() };
+  saveUsers(users);
+  setSession(res, id);
+  res.json({ ok: true, user: publicUser(users[id]) });
+});
+
+app.post("/api/login", (req, res) => {
+  const email = String((req.body && req.body.email) || "").trim().toLowerCase();
+  const password = String((req.body && req.body.password) || "");
+  const users = loadUsers();
+  const u = Object.values(users).find((x) => x.email === email);
+  if (!u || !verifyPassword(password, u.salt, u.hash)) {
+    return res.status(401).json({ error: "이메일 또는 비밀번호가 맞지 않습니다." });
+  }
+  setSession(res, u.id);
+  res.json({ ok: true, user: publicUser(u) });
+});
+
+app.post("/api/logout", (req, res) => {
+  clearSession(res);
+  res.json({ ok: true });
+});
+
+app.get("/api/me", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  res.json({ user: publicUser(u), costPerAgent: COST_PER_AGENT, costManager: COST_MANAGER });
+});
+
+// 테스트 충전. ⚠️ 실제 결제 아님 — 나중에 이 안에서 결제대행사(PG) 결제 성공을 확인한 뒤 크레딧을 올리도록 바꾼다.
+app.post("/api/topup", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  const users = loadUsers();
+  users[u.id].credits = (users[u.id].credits || 0) + TEST_TOPUP;
+  users[u.id].ceiling = users[u.id].credits; // 게이지 기준선을 새로 채운 만큼으로 초기화
+  saveUsers(users);
+  res.json({ ok: true, user: publicUser(users[u.id]) });
+});
+
 // 업무 시작 → 작업번호만 즉시 돌려주고, 실제 일은 뒤에서 진행
 app.post("/api/start", (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.status(401).json({ error: "로그인이 필요합니다." });
+
   const question = String((req.body && req.body.question) || "").trim();
   if (!question) return res.status(400).json({ error: "무엇을 알아봐 드릴지 적어 주세요." });
   if (question.length > 2000) return res.status(400).json({ error: "질문이 너무 깁니다. 2000자 이내로 적어 주세요." });
 
-  const job = createJob(question);
-  res.json({ jobId: job.id });
+  let agentKeys = Array.isArray(req.body && req.body.agents) ? req.body.agents.filter((k) => SPECIALISTS[k]) : [];
+  if (!agentKeys.length) agentKeys = SPECIALIST_KEYS.slice();
+
+  const quick = !!(req.body && req.body.quick);
+  // 빠른 모드는 총괄AI 검수를 건너뛰므로 검수 크레딧(20)을 받지 않는다.
+  const cost = agentKeys.length * COST_PER_AGENT + (quick ? 0 : COST_MANAGER);
+  if ((user.credits || 0) < cost) {
+    return res.status(402).json({ error: "크레딧이 부족합니다. 충전 후 다시 시도해 주세요.", need: cost, have: user.credits || 0 });
+  }
+
+  const job = createJob(question, agentKeys, user.id, cost, quick);
+  res.json({ jobId: job.id, cost });
   runPipeline(job);
 });
 
@@ -543,11 +789,9 @@ app.get("/api/stream/:jobId", (req, res) => {
   });
   res.write("retry: 3000\n\n");
 
-  // 화면을 새로 열거나 새로고침해도 지금까지의 진행을 그대로 복원
   for (const event of job.events) {
     res.write("data: " + JSON.stringify(event) + "\n\n");
   }
-
   if (job.finished) return res.end();
 
   job.listeners.push(res);
@@ -556,6 +800,19 @@ app.get("/api/stream/:jobId", (req, res) => {
     clearInterval(keepAlive);
     job.listeners = job.listeners.filter((r) => r !== res);
   });
+});
+
+// 결과물에 대한 대표님의 만족도(👍/👎) — 품질 저하를 조기에 감지하려는 용도
+app.post("/api/feedback", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  const rating = String((req.body && req.body.rating) || "");
+  if (rating !== "up" && rating !== "down") return res.status(400).json({ error: "잘못된 값입니다." });
+  const fb = loadJSONFile("feedback.json", []);
+  fb.push({ userId: u.id, jobId: String((req.body && req.body.jobId) || ""), rating, at: nowKR() });
+  if (fb.length > 500) fb.splice(0, fb.length - 500);
+  saveJSONFile("feedback.json", fb);
+  res.json({ ok: true });
 });
 
 // 대표의 결정 (승인 / 보완 요청)
@@ -572,6 +829,48 @@ app.post("/api/decide", (req, res) => {
   job.ceoResolve = null;
   resolve({ action, feedback: String(feedback || "").slice(0, 2000) });
   res.json({ ok: true });
+});
+
+/* ── 담당자별 전문지식 자료 관리 (RAG: 파일을 통째로 학습시키는 대신, 참고자료로 매번 끼워 넣는다) ── */
+
+app.get("/api/knowledge/:role", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  if (!SPECIALISTS[req.params.role] && req.params.role !== BRAND_KEY) return res.status(400).json({ error: "알 수 없는 담당자입니다." });
+  const kb = loadJSONFile("knowledge.json", {});
+  res.json({ items: (kb[u.id] && kb[u.id][req.params.role]) || [] });
+});
+
+app.post("/api/knowledge/:role", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  const role = req.params.role;
+  if (!SPECIALISTS[role] && role !== BRAND_KEY) return res.status(400).json({ error: "알 수 없는 담당자입니다." });
+  const title = String((req.body && req.body.title) || "").trim().slice(0, 80) || "제목 없음";
+  const text = String((req.body && req.body.text) || "").trim();
+  if (!text) return res.status(400).json({ error: "내용을 입력해 주세요." });
+  if (text.length > 20000) return res.status(400).json({ error: "자료가 너무 깁니다. 20000자 이내로 줄여 주세요." });
+
+  const kb = loadJSONFile("knowledge.json", {});
+  if (!kb[u.id]) kb[u.id] = {};
+  if (!kb[u.id][role]) kb[u.id][role] = [];
+  kb[u.id][role].push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    title, text, addedAt: nowKR(),
+  });
+  saveJSONFile("knowledge.json", kb);
+  res.json({ ok: true, items: kb[u.id][role] });
+});
+
+app.delete("/api/knowledge/:role/:id", (req, res) => {
+  const u = currentUser(req);
+  if (!u) return res.status(401).json({ error: "로그인이 필요합니다." });
+  const role = req.params.role;
+  if (!SPECIALISTS[role] && role !== BRAND_KEY) return res.status(400).json({ error: "알 수 없는 담당자입니다." });
+  const kb = loadJSONFile("knowledge.json", {});
+  if (kb[u.id] && kb[u.id][role]) kb[u.id][role] = kb[u.id][role].filter((k) => k.id !== req.params.id);
+  saveJSONFile("knowledge.json", kb);
+  res.json({ ok: true, items: (kb[u.id] && kb[u.id][role]) || [] });
 });
 
 const PORT = process.env.PORT || 3000;
