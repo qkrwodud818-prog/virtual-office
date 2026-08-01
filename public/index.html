@@ -4,54 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>가상오피스 — 내 AI 직원팀</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
-    --bg:#FAF6EF; --ink:#221F1B; --ink-soft:#5A554C; --line:#E3DACB;
-    --primary:#3E4C7A; --primary-soft:#DEE3F0;
-    --wood:#C97F2E; --sage:#4F7A56; --sage-soft:#DCEADB;
+    --bg:#F4F6FC; --card:#ffffff; --ink:#0F1222; --ink-soft:#616B85; --line:#E7EAF3;
+    --primary:#2F6BFF; --primary-soft:#E9F0FF;
+    --purple:#7A5CFF; --pink:#FF63B3;
+    --wood:#E08A2B; --sage:#18B888; --sage-soft:#DCF6EE;
     --skin:#F2C9A0;
-    --jaemin:#378ADD; --daeun:#1D9E75; --seunghyo:#D85A30; --jihye:#7F77DD; --haneul:#C9832E;
-    --display:'Do Hyeon',-apple-system,sans-serif;
-    --body:'IBM Plex Sans KR',-apple-system,'Malgun Gothic',sans-serif;
-    --mono:'IBM Plex Mono',monospace;
+    --grad:linear-gradient(90deg,#2F6BFF,#7A5CFF 55%,#FF63B3);
+    --display:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+    --body:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+    --mono:'Pretendard',ui-monospace,monospace;
   }
   *{box-sizing:border-box;}
-  body{background:var(--bg); color:var(--ink); font-family:var(--body); max-width:820px; margin:0 auto; padding:28px 18px 80px; line-height:1.6;}
-  h1{font-family:var(--display); font-size:26px; margin:0 0 4px; font-weight:400;}
-  p.sub{color:var(--ink-soft); font-size:14px; margin:0 0 22px;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); max-width:860px; margin:0 auto; padding:26px 18px 90px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1{font-family:var(--display); font-size:30px; margin:0 0 4px; font-weight:800; letter-spacing:-.02em;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  p.sub{color:var(--ink-soft); font-size:14.5px; margin:0 0 22px;}
 
   /* ── 탭(라이브오피스 / 대시보드) ── */
-  .tabs{display:flex; gap:8px; margin-bottom:14px;}
-  .tabbtn{background:#fff; color:var(--ink-soft); border:1px solid var(--line); font-weight:600;}
-  .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .tabs{display:inline-flex; gap:4px; margin-bottom:16px; background:#fff; padding:5px; border-radius:999px; border:1px solid var(--line); box-shadow:0 1px 3px rgba(16,18,34,.04);}
+  .tabbtn{background:transparent; color:var(--ink-soft); border:none; font-weight:700; border-radius:999px; padding:8px 18px;}
+  .tabbtn.active{background:var(--primary); color:#fff; box-shadow:0 4px 12px rgba(47,107,255,.3);}
   .view{display:none;}
   .view.active{display:block;}
 
   /* ── 업무 지시 입력 ── */
-  .ask{background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:18px;}
-  .ask label{display:block; font-size:13px; font-weight:600; margin-bottom:8px;}
-  .ask textarea{width:100%; min-height:70px; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
-    font-family:var(--body); font-size:14px; line-height:1.6; resize:vertical; background:var(--bg); color:var(--ink);}
+  .ask{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; margin-bottom:18px;
+    box-shadow:0 6px 24px rgba(16,18,34,.05);}
+  .ask label{display:block; font-size:13px; font-weight:700; margin-bottom:8px;}
+  .ask textarea{width:100%; min-height:74px; padding:13px 15px; border:1px solid var(--line); border-radius:12px;
+    font-family:var(--body); font-size:14.5px; line-height:1.6; resize:vertical; background:#fff; color:var(--ink);}
+  .ask textarea:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft);}
   .agentPicker{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
   .agentPicker label{display:flex; align-items:center; gap:5px; font-size:12px; font-weight:500;
     background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:6px 11px; cursor:pointer;}
   .agentPicker input{accent-color:var(--primary);}
-  .ask .row{display:flex; gap:8px; align-items:center; margin-top:10px;}
+  .ask .row{display:flex; gap:8px; align-items:center; margin-top:12px;}
   .hint{font-size:12px; color:var(--ink-soft); flex:1;}
-  button{font-family:var(--body); padding:11px 18px; border:none; border-radius:8px; background:var(--primary);
-    color:#fff; font-weight:600; cursor:pointer; font-size:14px;}
-  button:disabled{opacity:.45; cursor:not-allowed;}
-  button.ghost{background:#fff; color:var(--primary); border:1px solid var(--primary);}
-  button.go{background:var(--sage);}
-  button.small{padding:5px 10px; font-size:12px;}
+  button{font-family:var(--body); padding:12px 20px; border:none; border-radius:12px; background:var(--primary);
+    color:#fff; font-weight:700; cursor:pointer; font-size:14px; box-shadow:0 4px 14px rgba(47,107,255,.28);
+    transition:transform .1s, filter .15s, box-shadow .15s;}
+  button:hover{filter:brightness(1.04); transform:translateY(-1px);}
+  button:active{transform:translateY(0);}
+  button:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; transform:none;}
+  button.ghost{background:#fff; color:var(--primary); border:1.5px solid var(--primary-soft); box-shadow:none;}
+  button.ghost:hover{border-color:var(--primary); background:var(--primary-soft);}
+  button.go{background:var(--sage); box-shadow:0 4px 14px rgba(24,184,136,.3);}
+  button.small{padding:6px 12px; font-size:12px; border-radius:9px; box-shadow:none;}
+  #btn{background:var(--grad); background-size:160% 100%;}
 
   /* ── 비비 오피스 (카드) ── */
-  .office{position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
-  .office-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
-  .office-head h2{font-family:var(--display); font-weight:400; font-size:16px; margin:0;}
+  .office{position:relative; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 6px 24px rgba(16,18,34,.05);}
+  .office-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .office-head h2{font-family:var(--display); font-weight:800; font-size:17px; margin:0; letter-spacing:-.01em;}
   .badge{display:inline-block; min-width:16px; padding:1px 6px; margin-left:6px; border-radius:9px;
     background:var(--wood); color:#fff; font-size:10px; font-family:var(--mono); text-align:center; vertical-align:2px;}
   .log{margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
@@ -62,6 +69,16 @@
   .vcard{--rc:#666; --hue:0deg; position:relative; border-radius:14px; overflow:hidden;
     border:1px solid var(--line); background:#0b1230; box-shadow:0 4px 14px rgba(0,0,0,.12);}
   .vcard .accent{position:absolute; top:0; left:0; right:0; height:3px; background:var(--rc); z-index:5;}
+  /* 선택(고르기) */
+  .vcard.pick{cursor:pointer; transition:opacity .2s, box-shadow .2s, transform .1s;}
+  .vcard.pick:not(.sel){opacity:.5;}
+  .vcard.pick:hover{transform:translateY(-2px);}
+  .vcard.sel{box-shadow:0 0 0 3px var(--rc), 0 5px 16px rgba(0,0,0,.2);}
+  .vcard .pickbadge{position:absolute; top:7px; left:7px; z-index:6; background:var(--rc); color:#fff;
+    font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; display:none;}
+  .vcard.sel .pickbadge{display:block;}
+  .vcard .always{position:absolute; top:7px; left:7px; z-index:6; background:#3a4568; color:#fff;
+    font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px;}
   /* 공상과학 사무실 배경 */
   .vcard .scene{position:relative; height:170px; overflow:hidden;
     background:radial-gradient(130% 90% at 50% 20%, rgba(90,120,255,.32), transparent 62%),
@@ -150,10 +167,10 @@
   /* ── 대시보드 ── */
   .stat-cards{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;}
   @media (max-width:640px){ .stat-cards{grid-template-columns:repeat(2,1fr);} }
-  .stat-cards .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; text-align:center;}
-  .stat-cards .card .v{font-family:var(--display); font-size:22px; color:var(--primary);}
-  .stat-cards .card .l{font-size:11px; color:var(--ink-soft); margin-top:2px;}
-  .dash-table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  .stat-cards .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 12px; text-align:center; box-shadow:0 4px 16px rgba(16,18,34,.05);}
+  .stat-cards .card .v{font-family:var(--display); font-weight:800; font-size:24px; color:var(--primary);}
+  .stat-cards .card .l{font-size:11px; color:var(--ink-soft); margin-top:3px;}
+  .dash-table{width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(16,18,34,.05);}
   .dash-table th,.dash-table td{padding:10px 12px; font-size:13px; text-align:left; border-bottom:1px solid var(--line);}
   .dash-table th{background:var(--primary-soft); color:var(--primary); font-weight:600; font-size:12px;}
   .dash-table tr:last-child td{border-bottom:none;}
@@ -165,9 +182,10 @@
   .auth-overlay{display:none; position:fixed; inset:0; background:var(--bg); z-index:80;
     align-items:center; justify-content:center; padding:20px;}
   .auth-overlay.show{display:flex;}
-  .auth-card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px 26px;
-    width:100%; max-width:380px; box-shadow:0 10px 30px rgba(0,0,0,.08);}
-  .auth-card h2{font-family:var(--display); font-weight:400; font-size:23px; margin:0 0 4px; text-align:center;}
+  .auth-card{background:#fff; border:1px solid var(--line); border-radius:22px; padding:32px 28px;
+    width:100%; max-width:400px; box-shadow:0 20px 50px rgba(16,18,34,.12);}
+  .auth-card h2{font-family:var(--display); font-weight:800; font-size:26px; margin:0 0 4px; text-align:center; letter-spacing:-.02em;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
   .auth-card .sub2{font-size:13px; color:var(--ink-soft); text-align:center; margin:0 0 20px;}
   .auth-card label{display:block; font-size:13px; font-weight:600; margin:12px 0 5px;}
   .auth-card input{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
@@ -181,7 +199,8 @@
 
   /* ── 계정 바 (상단) ── */
   .acctbar{display:none; align-items:center; gap:12px; flex-wrap:wrap;
-    background:#fff; border:1px solid var(--line); border-radius:12px; padding:11px 15px; margin-bottom:16px;}
+    background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 16px; margin-bottom:16px;
+    box-shadow:0 4px 16px rgba(16,18,34,.05);}
   .acctbar.show{display:flex;}
   .acctbar .who{font-size:13px; font-weight:600;}
   .acctbar .who span{color:var(--ink-soft); font-weight:400;}
@@ -191,7 +210,7 @@
   .credit-top .warn{color:var(--wood); font-weight:600;}
   .credit-top .warn.crit{color:#B23B2E;}
   .gauge{height:9px; background:var(--line); border-radius:6px; overflow:hidden;}
-  .gauge .fill{height:100%; background:var(--sage); border-radius:6px; transition:width .5s ease;}
+  .gauge .fill{height:100%; background:linear-gradient(90deg,#2F6BFF,#18B888); border-radius:6px; transition:width .5s ease;}
   .gauge .fill.low{background:var(--wood);}
   .gauge .fill.crit{background:#D85A30;}
   .acctbar .acts{display:flex; gap:6px;}
@@ -287,10 +306,9 @@
       <div class="chiprow" id="examples"><span class="lbl">예시:</span></div>
       <div class="chiprow" id="templatesBar"><span class="lbl">자주 쓰는 업무:</span></div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:8px;">
-        <label style="margin:0;">이번 업무에 쓸 담당자 (원하는 만큼 선택)</label>
-        <button type="button" class="ghost small" id="recommendBtn">🎯 업무에 맞게 추천</button>
+        <label style="margin:0;">아래 비비 카드를 눌러 이번 업무에 참여할 비비를 고르세요</label>
+        <button type="button" class="ghost small" id="recommendBtn">🎯 자동 추천</button>
       </div>
-      <div class="agentPicker" id="agentPicker"></div>
       <div class="hint" id="recNote" style="margin-top:6px; display:none;"></div>
       <label style="display:flex; align-items:center; gap:6px; margin-top:10px; font-weight:500; font-size:13px; cursor:pointer;">
         <input type="checkbox" id="quickMode"> ⚡ 빠른 모드 — 아이디어만 빠르게 (총괄 검수 생략, 검수 크레딧 20 절약)
@@ -366,6 +384,7 @@
       <input id="authPw" type="password" autocomplete="current-password" placeholder="6자 이상">
       <div class="auth-err" id="authErr"></div>
       <button class="mainbtn" id="authBtn">로그인</button>
+      <button type="button" class="ghost" id="guestBtn" style="width:100%; margin-top:8px;">로그인 없이 둘러보기</button>
       <div class="auth-switch" id="authSwitch">계정이 없으신가요? <a id="authToggle">회원가입</a></div>
       <div class="auth-note" id="authBonus">지금 가입하면 무료 크레딧 300을 드립니다.</div>
     </div>
@@ -471,13 +490,16 @@ function buildCards(){
     }).join('');
     var overall = Math.round(sum / STAT_AXES.length);
 
+    var pickable = PICKABLE.indexOf(p.name) >= 0;
     var card = document.createElement('div');
-    card.className = 'vcard st-idle';
+    card.className = 'vcard st-idle' + (pickable ? ' pick sel' : '');
+    card.setAttribute('data-key', p.name);
     card.style.setProperty('--rc', p.color);
     card.style.setProperty('--hue', (p.hue || 0) + 'deg');
     card.title = p.desc || '';
     card.innerHTML =
       '<div class="accent"></div>'
+      + (pickable ? '<div class="pickbadge">✓ 선택됨</div>' : '<div class="always">항상 참여</div>')
       + '<div class="scene"><div class="glow"></div><div class="ov"></div><div class="spr"><img src="/assets/char-bibi-' + (p.sprite === 'man' ? 'a' : 'b') + '.png" alt=""></div></div>'
       + '<div class="body">'
       +   '<div class="id"><span class="rating">' + overall + '</span>'
@@ -485,6 +507,12 @@ function buildCards(){
       +   '<div class="stt">대기 중</div>'
       +   statsHTML
       + '</div>';
+    if(pickable){
+      card.addEventListener('click', function(){
+        card.classList.toggle('sel');
+        updateCostEst();
+      });
+    }
     grid.appendChild(card);
 
     els[p.name] = { card:card, status:card.querySelector('.stt'), ov:card.querySelector('.ov'), info:p, lastTime:'' };
@@ -492,19 +520,10 @@ function buildCards(){
 }
 buildCards();
 
-/* ────────── 업무마다 담당자 고르기 ────────── */
-function buildAgentPicker(){
-  var box = document.getElementById('agentPicker');
-  PICKABLE.forEach(function(key){
-    var p = CREW.filter(function(c){ return c.name === key; })[0];
-    var label = document.createElement('label');
-    label.innerHTML = '<input type="checkbox" value="' + esc(key) + '" checked> ' + esc(displayName(key)) + ' <span style="color:var(--ink-soft);">(' + esc(p.role) + ')</span>';
-    box.appendChild(label);
-  });
-}
-buildAgentPicker();
+/* ────────── 이번 업무에 고른 비비 (선택된 카드에서 읽음) ────────── */
 function selectedAgents(){
-  return Array.prototype.slice.call(document.querySelectorAll('#agentPicker input:checked')).map(function(i){ return i.value; });
+  return Array.prototype.slice.call(document.querySelectorAll('.vcard.pick.sel'))
+    .map(function(c){ return c.getAttribute('data-key'); });
 }
 
 /* ────────── 캐릭터 상태 (5단계) ────────── */
@@ -954,7 +973,6 @@ function updateCostEst(){
   var el = document.getElementById('costEst');
   if(el) el.textContent = (n * COST.perAgent + (isQuick() ? 0 : COST.manager));
 }
-document.getElementById('agentPicker').addEventListener('change', updateCostEst);
 document.getElementById('quickMode').addEventListener('change', updateCostEst);
 
 function renderCredits(user){
@@ -1013,6 +1031,22 @@ document.getElementById('authBtn').onclick = function(){
 
 document.getElementById('logoutBtn').onclick = function(){
   fetch('/api/logout', { method:'POST' }).then(function(){ location.reload(); });
+};
+
+document.getElementById('guestBtn').onclick = function(){
+  var errEl = document.getElementById('authErr');
+  errEl.style.display = 'none';
+  fetch('/api/guest', { method:'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.user){ errEl.textContent = '체험 입장에 실패했습니다.'; errEl.style.display = 'block'; return; }
+      document.getElementById('authOverlay').classList.remove('show');
+      document.getElementById('acctbar').classList.add('show');
+      renderCredits(res.user);
+      updateCostEst();
+      maybeOnboard();
+    })
+    .catch(function(){ errEl.textContent = '연결에 실패했습니다.'; errEl.style.display = 'block'; });
 };
 
 document.getElementById('topupBtn').onclick = function(){ document.getElementById('topupOverlay').classList.add('open'); };
@@ -1121,7 +1155,9 @@ document.getElementById('recommendBtn').onclick = function(){
     return (RECMAP[k]||[]).some(function(w){ return q.indexOf(String(w).toLowerCase()) >= 0; });
   });
   if(!picked.length) picked = ['전략기획','SNS콘텐츠'];
-  document.querySelectorAll('#agentPicker input').forEach(function(i){ i.checked = picked.indexOf(i.value) >= 0; });
+  document.querySelectorAll('.vcard.pick').forEach(function(c){
+    c.classList.toggle('sel', picked.indexOf(c.getAttribute('data-key')) >= 0);
+  });
   updateCostEst();
   note.style.display = 'block';
   note.innerHTML = '추천: <b>' + picked.map(function(k){ return esc(displayName(k)); }).join(', ') + '</b> — 이 업무엔 이 담당자들이 잘 맞아요. 더 고르거나 빼셔도 됩니다.';
