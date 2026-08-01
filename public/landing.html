@@ -3,377 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>가상오피스 — AI 회사를 차리세요</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<title>비비 — 잠들지 않는 AI 직원팀</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
-    --bg:#FAF6EF;
-    --bg-soft:#F1EBDD;
-    --ink:#221F1B;
-    --ink-soft:#5A554C;
-    --line:#E3DACB;
-    --primary:#3E4C7A;
-    --primary-soft:#DEE3F0;
-    --wood:#C97F2E;
-    --wood-soft:#F3DFC2;
-    --sage:#4F7A56;
-    --sage-soft:#DCEADB;
-    --coral:#C4553B;
+    --bg:#FFFFFF; --bg2:#F4F6FC; --ink:#0F1222; --soft:#616B85; --line:#E7EAF3;
+    --blue:#2F6BFF; --purple:#7A5CFF; --pink:#FF63B3; --soft-blue:#E9F0FF;
+    --grad:linear-gradient(90deg,#2F6BFF,#7A5CFF 55%,#FF63B3);
+    --f:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:'IBM Plex Sans KR', sans-serif;
-    line-height:1.6;
-    overflow-x:hidden;
-  }
-  .font-display{font-family:'Do Hyeon', sans-serif; letter-spacing:0.01em;}
-  .font-mono{font-family:'IBM Plex Mono', monospace;}
-  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
-  a{color:inherit;}
+  body{font-family:var(--f); color:var(--ink); background:var(--bg); line-height:1.65; -webkit-font-smoothing:antialiased;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 22px;}
+  .btn{display:inline-block; background:var(--blue); color:#fff; font-weight:700; font-size:15px;
+    padding:13px 24px; border-radius:999px; box-shadow:0 8px 20px rgba(47,107,255,.3); transition:transform .12s, filter .15s;}
+  .btn:hover{transform:translateY(-2px); filter:brightness(1.05);}
+  .btn.grad{background:var(--grad);}
+  .btn.ghost{background:#fff; color:var(--blue); border:1.5px solid var(--soft-blue); box-shadow:none;}
+  .pill{display:inline-block; background:var(--soft-blue); color:var(--blue); font-weight:700; font-size:12.5px;
+    padding:6px 14px; border-radius:999px; letter-spacing:-.01em;}
 
-  /* NAV */
-  nav{
-    position:sticky; top:0; z-index:50;
-    background:rgba(250,246,239,0.9); backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
-  }
-  nav .wrap{display:flex; align-items:center; justify-content:space-between; height:68px;}
-  .logo{font-size:22px;}
-  .logo span{color:var(--wood);}
-  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--ink-soft);}
-  .nav-links a:hover{color:var(--ink);}
-  .btn{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:11px 20px; border-radius:8px; font-size:14px; font-weight:600;
-    border:1px solid transparent; cursor:pointer; text-decoration:none;
-    transition:transform .15s ease, box-shadow .15s ease;
-  }
-  .btn:hover{transform:translateY(-1px);}
-  .btn-primary{background:var(--primary); color:#fff;}
-  .btn-primary:hover{box-shadow:0 6px 16px rgba(62,76,122,0.28);}
-  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line);}
-  .btn-wood{background:var(--wood); color:#fff;}
-  .btn-wood:hover{box-shadow:0 6px 16px rgba(201,127,46,0.3);}
-  .btn-block{width:100%; justify-content:center;}
+  /* nav */
+  nav{position:sticky; top:0; z-index:50; background:rgba(255,255,255,.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  nav .inner{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .logo{font-weight:900; font-size:22px; letter-spacing:-.03em;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  nav .links{display:flex; align-items:center; gap:26px; font-size:14.5px; font-weight:600; color:var(--soft);}
+  nav .links a.nav:hover{color:var(--ink);}
+  @media(max-width:720px){ nav .links a.nav{display:none;} }
 
-  /* HERO */
-  .hero{padding:76px 0 60px;}
-  .hero-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
-  .eyebrow{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:13px; color:var(--wood); font-weight:600;
-    background:var(--wood-soft); padding:6px 12px; border-radius:20px; margin-bottom:18px;
-  }
-  .eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--wood);}
-  h1{font-size:44px; line-height:1.25; margin-bottom:20px;}
-  h1 .u{color:var(--primary); text-decoration:underline; text-decoration-color:var(--wood-soft); text-decoration-thickness:8px; text-underline-offset:-2px;}
-  .hero p.lede{font-size:17px; color:var(--ink-soft); margin-bottom:30px; max-width:440px;}
-  .hero-ctas{display:flex; gap:12px; margin-bottom:22px;}
-  .hero-note{font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+  /* hero */
+  .hero{position:relative; text-align:center; padding:78px 0 60px; overflow:hidden;}
+  .hero:before{content:''; position:absolute; top:-180px; left:50%; transform:translateX(-50%);
+    width:900px; height:520px; background:radial-gradient(closest-side, rgba(122,92,255,.20), transparent 70%); z-index:-1;}
+  .hero h1{font-size:56px; font-weight:900; letter-spacing:-.035em; line-height:1.1; margin:18px 0 18px;}
+  .hero h1 .g{background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .hero p{font-size:18px; color:var(--soft); max-width:620px; margin:0 auto 30px;}
+  .hero .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .trust{margin-top:22px; font-size:13px; color:var(--soft);}
+  @media(max-width:720px){ .hero h1{font-size:38px;} .hero p{font-size:16px;} }
 
-  /* OFFICE DEMO */
-  .office-card{
-    background:var(--bg-soft); border:1px solid var(--line); border-radius:16px;
-    padding:14px; position:relative;
-  }
-  .office-floor{
-    position:relative; width:100%; height:320px; background:#fff;
-    border-radius:12px; border:1px solid var(--line); overflow:hidden;
-  }
-  .room{position:absolute; border:1.5px dashed var(--line); border-radius:10px;}
-  .room-label{position:absolute; top:6px; left:8px; font-size:11px; color:var(--ink-soft); font-weight:600;}
-  .desk{position:absolute; width:22px; height:13px; background:var(--wood); border-radius:2px; transform:translate(-50%,40%);}
-  .tray{position:absolute; width:24px; height:20px; background:var(--primary-soft); border:1px solid var(--primary); border-radius:5px; transform:translate(-50%,-30%); display:flex; align-items:center; justify-content:center; font-size:11px;}
-  .worker{position:absolute; width:18px; height:24px; transition:left 1s ease, top 1s ease; transform:translate(-50%,-70%); text-align:center;}
-  .worker .head{position:absolute; top:0; left:5px; width:8px; height:8px; border-radius:50%; background:#f2c9a0;}
-  .worker .body{position:absolute; top:7px; left:2px; width:14px; height:13px; border-radius:2px;}
-  .b-w1{background:#4C7BC4;} .b-w2{background:#4F9E70;} .b-w3{background:#C4623E;} .b-mgr{background:#7C6BC7;}
-  .wname{position:absolute; top:26px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--ink-soft); white-space:nowrap;}
-  .tag{position:absolute; top:-19px; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:10px; background:var(--ink); color:#fff; border-radius:6px; padding:3px 6px; opacity:0; transition:opacity .25s;}
-  .tag.show{opacity:1;}
-  .office-log{
-    margin-top:12px; padding:12px 14px; background:#fff; border:1px solid var(--line); border-radius:10px;
-    display:flex; align-items:center; gap:10px; font-size:13px;
-  }
-  .office-log .dot{width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0; animation:blink 1.4s infinite;}
-  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+  /* hero cards strip */
+  .strip{display:flex; gap:14px; justify-content:center; margin-top:46px; flex-wrap:wrap;}
+  .mini{width:150px; background:#0b1230; border-radius:16px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 14px 34px rgba(16,18,34,.14);}
+  .mini .sc{position:relative; height:150px; overflow:hidden; background:radial-gradient(130% 90% at 50% 20%, rgba(90,120,255,.32), transparent 62%), linear-gradient(180deg,#16204a,#0a1030);}
+  .mini .sc img{position:absolute; left:50%; top:6px; transform:translateX(-50%); width:112px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));}
+  .mini .bd{background:#fff; padding:10px 12px;}
+  .mini .r{display:flex; align-items:center; gap:7px;}
+  .mini .r b{font-size:20px; font-weight:900; color:var(--rc,#2F6BFF);}
+  .mini .r span{font-size:12.5px; font-weight:700;}
+  .mini .r span small{display:block; color:var(--soft); font-weight:500; font-size:10px;}
+  @media(max-width:720px){ .mini:nth-child(n+4){display:none;} }
 
-  /* PROCESS */
+  /* sections */
   section{padding:72px 0;}
-  .section-head{max-width:560px; margin-bottom:44px;}
-  .section-head .eyebrow{background:var(--primary-soft); color:var(--primary);}
-  .section-head .eyebrow::before{background:var(--primary);}
-  h2{font-size:32px; margin-bottom:12px;}
-  .section-head p{color:var(--ink-soft); font-size:15px;}
-  .process-list{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
-  .process-item{border-top:2px solid var(--ink); padding-top:16px;}
-  .process-num{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--wood); font-weight:600; margin-bottom:10px; display:block;}
-  .process-item h3{font-size:17px; margin-bottom:8px;}
-  .process-item p{font-size:13.5px; color:var(--ink-soft);}
+  .sec-head{text-align:center; max-width:640px; margin:0 auto 44px;}
+  .sec-head h2{font-size:36px; font-weight:900; letter-spacing:-.03em; margin:14px 0 12px; line-height:1.2;}
+  .sec-head p{font-size:16px; color:var(--soft);}
+  .bg2{background:var(--bg2);}
 
-  /* TRUST */
-  .trust{background:var(--primary); color:#fff; border-radius:20px; margin:0 28px;}
-  .trust .wrap{padding:56px 28px; max-width:1064px;}
-  .trust-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:44px; align-items:center;}
-  .trust h2{color:#fff;}
-  .trust p.lede{color:#D6DBEC; font-size:15px; margin-bottom:22px;}
-  .compare{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:22px;}
-  .compare-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.14); font-size:14px;}
-  .compare-row:last-child{border-bottom:none;}
-  .compare-row .no{color:#B9C0DD;}
-  .compare-row .yes{color:#F6D9B8; font-weight:600;}
+  /* team grid */
+  .team{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px;}
+  .tcard{background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 6px 20px rgba(16,18,34,.05); transition:transform .12s, box-shadow .15s;}
+  .tcard:hover{transform:translateY(-4px); box-shadow:0 16px 34px rgba(16,18,34,.12);}
+  .tcard .sc{position:relative; height:150px; overflow:hidden; background:radial-gradient(130% 90% at 50% 20%, rgba(90,120,255,.30), transparent 62%), linear-gradient(180deg,#16204a,#0a1030);}
+  .tcard .sc:before{content:''; position:absolute; top:0;left:0;right:0; height:3px; background:var(--rc);}
+  .tcard .sc img{position:absolute; left:50%; top:6px; transform:translateX(-50%); width:112px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));}
+  .tcard .bd{padding:12px 14px 14px;}
+  .tcard .bd .r{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .tcard .bd .r b{font-size:22px; font-weight:900; color:var(--rc);}
+  .tcard .bd .r .nm{font-weight:800; font-size:13px;}
+  .tcard .bd .r .nm small{display:block; font-weight:500; font-size:10.5px; color:var(--soft);}
+  .tcard .bd .d{font-size:11.5px; color:var(--soft); line-height:1.45;}
 
-  /* PRICING */
-  .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
-  .price-card{
-    background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px;
-    position:relative; display:flex; flex-direction:column;
-  }
-  .price-card.featured{border:2px solid var(--primary); box-shadow:0 12px 28px rgba(62,76,122,0.14);}
-  .badge{
-    position:absolute; top:-13px; left:28px; background:var(--primary); color:#fff;
-    font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px;
-  }
-  .price-name{font-size:15px; color:var(--ink-soft); margin-bottom:4px;}
-  .price-tagline{font-size:13.5px; color:var(--ink-soft); margin-bottom:18px;}
-  .price-amount{font-family:'IBM Plex Mono',monospace; font-size:34px; font-weight:500; margin-bottom:2px;}
-  .price-amount span{font-size:14px; color:var(--ink-soft); font-family:'IBM Plex Sans KR';}
-  .price-feats{list-style:none; margin:20px 0 24px; flex:1;}
-  .price-feats li{font-size:13.5px; color:var(--ink-soft); padding:8px 0; border-top:1px solid var(--line); display:flex; gap:8px;}
-  .price-feats li:first-child{border-top:none;}
-  .price-feats li::before{content:'✓'; color:var(--sage); font-weight:700;}
+  /* steps */
+  .steps{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  @media(max-width:820px){ .steps{grid-template-columns:repeat(2,1fr);} }
+  .step{background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 6px 20px rgba(16,18,34,.05);}
+  .step .no{width:38px; height:38px; border-radius:12px; background:var(--grad); color:#fff; font-weight:900; font-size:17px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:14px;}
+  .step h3{font-size:16px; font-weight:800; margin-bottom:6px;}
+  .step p{font-size:13.5px; color:var(--soft);}
 
-  /* FOOTER CTA */
-  .cta-final{text-align:center; padding:88px 0;}
-  .cta-final h2{font-size:36px; margin-bottom:14px;}
-  .cta-final p{color:var(--ink-soft); margin-bottom:28px;}
-  .signup-form{display:flex; gap:8px; max-width:420px; margin:0 auto;}
-  .signup-form input{
-    flex:1; padding:13px 16px; border:1px solid var(--line); border-radius:8px; font-size:14px;
-    font-family:'IBM Plex Sans KR';
-  }
-  .signup-form input:focus{outline:2px solid var(--primary); outline-offset:1px;}
-  .form-note{font-size:12.5px; color:var(--ink-soft); margin-top:10px;}
+  /* features */
+  .feat{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media(max-width:820px){ .feat{grid-template-columns:1fr;} }
+  .fcard{background:#fff; border:1px solid var(--line); border-radius:18px; padding:26px; box-shadow:0 6px 20px rgba(16,18,34,.05);}
+  .fcard .ic{font-size:30px; margin-bottom:12px;}
+  .fcard h3{font-size:18px; font-weight:800; margin-bottom:8px;}
+  .fcard p{font-size:14px; color:var(--soft);}
 
-  footer{border-top:1px solid var(--line); padding:28px 0; font-size:13px; color:var(--ink-soft); text-align:center;}
+  /* pricing */
+  .plans{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:stretch;}
+  @media(max-width:820px){ .plans{grid-template-columns:1fr; max-width:400px; margin:0 auto;} }
+  .plan{background:#fff; border:1.5px solid var(--line); border-radius:22px; padding:28px 24px; position:relative; box-shadow:0 6px 20px rgba(16,18,34,.05);}
+  .plan.hot{border-color:var(--blue); box-shadow:0 18px 40px rgba(47,107,255,.18);}
+  .plan .tag{position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--grad); color:#fff; font-size:12px; font-weight:800; padding:5px 14px; border-radius:999px;}
+  .plan h3{font-size:17px; font-weight:800; margin-bottom:6px;}
+  .plan .price{font-size:34px; font-weight:900; letter-spacing:-.02em; margin:8px 0 2px;}
+  .plan .price small{font-size:15px; font-weight:600; color:var(--soft);}
+  .plan .credit{font-size:13px; color:var(--blue); font-weight:700; margin-bottom:16px;}
+  .plan ul{list-style:none; margin:0 0 20px; font-size:14px;}
+  .plan li{padding:7px 0; color:var(--soft); display:flex; gap:8px;}
+  .plan li:before{content:'✓'; color:var(--blue); font-weight:900;}
+  .plan .btn{width:100%; text-align:center;}
 
-  @media (max-width:860px){
-    .hero-grid{grid-template-columns:1fr;}
-    h1{font-size:32px;}
-    .process-list{grid-template-columns:1fr 1fr;}
-    .trust-grid{grid-template-columns:1fr;}
-    .pricing-grid{grid-template-columns:1fr;}
-    .trust{margin:0 16px;}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .worker{transition:none;}
-    .office-log .dot{animation:none;}
-  }
+  /* faq */
+  .faq{max-width:720px; margin:0 auto;}
+  details{background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px; margin-bottom:12px;}
+  details summary{list-style:none; cursor:pointer; font-weight:700; font-size:15.5px; padding:16px 0; display:flex; justify-content:space-between; align-items:center;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary:after{content:'+'; color:var(--blue); font-size:22px; font-weight:400;}
+  details[open] summary:after{content:'−';}
+  details p{padding:0 0 18px; color:var(--soft); font-size:14px;}
+
+  /* cta band */
+  .band{background:var(--grad); border-radius:28px; padding:56px 30px; text-align:center; color:#fff; margin:20px 0;}
+  .band h2{font-size:34px; font-weight:900; letter-spacing:-.02em; margin-bottom:12px;}
+  .band p{opacity:.92; margin-bottom:26px; font-size:16px;}
+  .band .btn{background:#fff; color:var(--blue);}
+
+  footer{border-top:1px solid var(--line); padding:34px 0; color:var(--soft); font-size:13px; text-align:center;}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="wrap">
-    <div class="logo font-display">가상<span>오피스</span></div>
-    <div class="nav-links">
-      <a href="#how">어떻게 일하나요</a>
-      <a href="#trust">신뢰 구조</a>
-      <a href="#pricing">요금제</a>
+  <div class="wrap inner">
+    <a href="#" class="logo">비비</a>
+    <div class="links">
+      <a class="nav" href="#team">AI 직원</a>
+      <a class="nav" href="#how">사용법</a>
+      <a class="nav" href="#price">요금</a>
+      <a class="btn" href="/">시작하기</a>
     </div>
-    <a href="#pricing" class="btn btn-primary">무료로 시작</a>
   </div>
 </nav>
 
 <header class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <div class="eyebrow">1인 사업가를 위한 AI 팀</div>
-      <h1 class="font-display">직원을 고용하지 마세요.<br><span class="u">AI 회사</span>를 차리세요.</h1>
-      <p class="lede">시장조사부터 검증, 승인까지 — 재민·다은·승효·이지혜 네 명의 AI 팀원이 24시간 당신의 회사를 운영합니다.</p>
-      <div class="hero-ctas">
-        <a href="#pricing" class="btn btn-primary">무료로 팀 꾸리기</a>
-        <a href="#how" class="btn btn-ghost">어떻게 일하는지 보기</a>
-      </div>
-      <div class="hero-note">카드 등록 없이 바로 체험 · 4단계 교차 검증 구조</div>
+  <div class="wrap">
+    <span class="pill">🤖 미래에서 온 AI 직원팀</span>
+    <h1>잠들지 않는 <span class="g">AI 직원팀,<br>비비</span>가 당신의 회사를 굴립니다</h1>
+    <p>업무를 한국어로 말하면, 13명의 비비가 각자 조사·작성하고 총괄 비비가 검수해 보고서로 올립니다. 사람을 뽑지 않고, 나만의 AI 회사를 차리세요.</p>
+    <div class="cta">
+      <a class="btn grad" href="/">무료로 시작하기</a>
+      <a class="btn ghost" href="#how">어떻게 쓰나요?</a>
     </div>
+    <div class="trust">가입하면 무료 크레딧 300 · 로그인 없이 둘러보기 가능</div>
 
-    <div class="office-card">
-      <div class="office-floor" id="floor">
-        <div class="room" style="left:2%; top:4%; width:44%; height:58%;"><span class="room-label">조사팀</span></div>
-        <div class="room" style="left:48%; top:4%; width:22%; height:58%;"><span class="room-label">검증팀</span></div>
-        <div class="room" style="left:73%; top:4%; width:25%; height:22%;"><span class="room-label">제출함</span></div>
-        <div class="room" style="left:73%; top:30%; width:25%; height:32%;"><span class="room-label">대표실</span></div>
-
-        <div class="desk" style="left:14%; top:32%;"></div>
-        <div class="desk" style="left:32%; top:32%;"></div>
-        <div class="desk" style="left:59%; top:32%;"></div>
-        <div class="desk" style="left:85%; top:44%;"></div>
-        <div class="tray" style="left:85%; top:14%;">📥</div>
-
-        <div id="w1" class="worker" style="left:14%; top:32%;"><div class="tag"></div><div class="body b-w1"></div><div class="head"></div><div class="wname">재민</div></div>
-        <div id="w2" class="worker" style="left:32%; top:32%;"><div class="tag"></div><div class="body b-w2"></div><div class="head"></div><div class="wname">다은</div></div>
-        <div id="w3" class="worker" style="left:59%; top:32%;"><div class="tag"></div><div class="body b-w3"></div><div class="head"></div><div class="wname">승효</div></div>
-        <div id="mgr" class="worker" style="left:85%; top:44%;"><div class="tag"></div><div class="body b-mgr"></div><div class="head"></div><div class="wname">이지혜</div></div>
-      </div>
-      <div class="office-log"><span class="dot"></span><span id="log">오늘의 업무를 시작할게요</span></div>
-    </div>
+    <div class="strip" id="miniStrip"></div>
   </div>
 </header>
 
+<section id="team" class="bg2">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="pill">우리 팀</span>
+      <h2>13명의 비비, 각자의 전문 임무</h2>
+      <p>같은 얼굴, 같은 이름. 하지만 태어날 때 단 하나의 전문 임무를 부여받은 로봇인간들입니다.</p>
+    </div>
+    <div class="team" id="teamGrid"></div>
+  </div>
+</section>
+
 <section id="how">
   <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">일하는 순서</div>
-      <h2 class="font-display">네 명이 순서대로, 서로를 검토합니다</h2>
-      <p>혼자 일하는 AI는 실수를 걸러줄 사람이 없습니다. 저희는 사람이 일하는 방식 그대로, 조사 → 검증 → 승인 → 전달을 거칩니다.</p>
+    <div class="sec-head">
+      <span class="pill">사용법</span>
+      <h2>딱 4단계면 끝</h2>
+      <p>복잡한 설정 없이, 말만 하면 됩니다.</p>
     </div>
-    <div class="process-list">
-      <div class="process-item">
-        <span class="process-num">01</span>
-        <h3>재민·다은이 조사</h3>
-        <p>두 명이 동시에 자료를 찾습니다. 출처와 최신성을 우선 확인합니다.</p>
-      </div>
-      <div class="process-item">
-        <span class="process-num">02</span>
-        <h3>승효가 검증</h3>
-        <p>자료 신뢰도와 요청 내용 부합 여부를 확인하고, 부족하면 재조사를 요청합니다.</p>
-      </div>
-      <div class="process-item">
-        <span class="process-num">03</span>
-        <h3>이지혜가 승인</h3>
-        <p>전체 결과가 실제 질문에 답이 되는지 종합 검토합니다.</p>
-      </div>
-      <div class="process-item">
-        <span class="process-num">04</span>
-        <h3>대표님께 전달</h3>
-        <p>노션·디스코드로 자동 전송됩니다. 확인 버튼 한 번이면 끝입니다.</p>
-      </div>
+    <div class="steps">
+      <div class="step"><div class="no">1</div><h3>업무를 적어요</h3><p>무엇을 알아볼지, 무엇을 만들지 한국어로 편하게 적습니다.</p></div>
+      <div class="step"><div class="no">2</div><h3>비비를 골라요</h3><p>이 업무에 맞는 비비를 카드로 고릅니다. 자동 추천도 있어요.</p></div>
+      <div class="step"><div class="no">3</div><h3>총괄이 검수해요</h3><p>비비들이 각자 일하고, 총괄 비비가 믿을 만한지 확인해 정리합니다.</p></div>
+      <div class="step"><div class="no">4</div><h3>대표가 결정해요</h3><p>보고서를 보고 승인하거나 보완을 요청하면 끝. 크레딧은 결과가 나올 때만 차감돼요.</p></div>
     </div>
   </div>
 </section>
 
-<section id="trust">
-  <div class="trust">
-    <div class="wrap">
-      <div class="trust-grid">
-        <div>
-          <div class="eyebrow" style="background:rgba(255,255,255,0.14); color:#F6D9B8;">신뢰 구조</div>
-          <h2 class="font-display">다른 AI 팀은 왜<br>못 미더울까요</h2>
-          <p class="lede">혼자 일하는 AI는 결과가 그럴듯해 보여도 검증이 없습니다. 저희는 처음부터 여러 명이 서로 확인하는 구조로 설계했습니다.</p>
-          <a href="#pricing" class="btn btn-wood">차이를 직접 확인하기</a>
-        </div>
-        <div class="compare">
-          <div class="compare-row"><span class="no">단일 AI가 혼자 작성</span><span class="yes">4명이 교차 검증</span></div>
-          <div class="compare-row"><span class="no">결과만 통보</span><span class="yes">과정이 눈으로 보임</span></div>
-          <div class="compare-row"><span class="no">무료 체험 불가</span><span class="yes">카드 없이 5회 체험</span></div>
-          <div class="compare-row"><span class="no">근거 불명확</span><span class="yes">출처·부합성 확인 후 승인</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="pricing">
+<section class="bg2">
   <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">요금제</div>
-      <h2 class="font-display">전체 팀을 그대로 드립니다</h2>
-      <p>직원 수로 등급을 나누지 않습니다. 등급 차이는 업무 처리량과 속도뿐입니다.</p>
+    <div class="sec-head">
+      <span class="pill">왜 비비인가</span>
+      <h2>진짜 일하는 AI 팀</h2>
+      <p>겉만 그럴싸한 역할극이 아니라, 실제로 웹을 조사하고 검수합니다.</p>
     </div>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-name">체험판</div>
-        <div class="price-amount">0원</div>
-        <div class="price-tagline">우리 회사, 일단 출근시켜보세요</div>
-        <ul class="price-feats">
-          <li>AI 팀 4명 전원 체험</li>
-          <li>월 5회 업무 처리</li>
-          <li>카드 등록 불필요</li>
-        </ul>
-        <a href="#signup" class="btn btn-ghost btn-block">무료로 팀 꾸리기</a>
-      </div>
-      <div class="price-card featured">
-        <span class="badge">가장 많이 선택</span>
-        <div class="price-name">Basic</div>
-        <div class="price-amount">23,000<span>원/월</span></div>
-        <div class="price-tagline">AI 회사, 본격 가동</div>
-        <ul class="price-feats">
-          <li>AI 팀 4명 무제한 협업</li>
-          <li>월 30회 업무 처리</li>
-          <li>노션·디스코드 자동 연동</li>
-        </ul>
-        <a href="#signup" class="btn btn-primary btn-block">이 팀으로 시작하기</a>
-      </div>
-      <div class="price-card">
-        <div class="price-name">Pro</div>
-        <div class="price-amount">50,000<span>원/월</span></div>
-        <div class="price-tagline">바쁜 대표님을 위한 더 빠른 팀</div>
-        <ul class="price-feats">
-          <li>처리 속도 우선순위</li>
-          <li>월 80회 업무 처리</li>
-          <li>재검증 무제한</li>
-        </ul>
-        <a href="#signup" class="btn btn-ghost btn-block">풀가동하기</a>
-      </div>
+    <div class="feat">
+      <div class="fcard"><div class="ic">🛡️</div><h3>총괄 비비의 검수</h3><p>근거가 부실하면 다시 시키고, 통과한 것만 대표님 눈높이로 정리해 올립니다.</p></div>
+      <div class="fcard"><div class="ic">📚</div><h3>전문지식 학습</h3><p>논문·가이드·브랜드 규칙을 등록하면 비비가 일할 때마다 참고합니다.</p></div>
+      <div class="fcard"><div class="ic">💳</div><h3>정직한 크레딧</h3><p>결과가 나올 때만 차감. 오류가 나면 차감하지 않습니다. 예상 차감도 미리 보여줘요.</p></div>
+      <div class="fcard"><div class="ic">⚡</div><h3>빠른 모드</h3><p>가벼운 아이디어는 검수를 건너뛰고 더 빠르고 저렴하게 받습니다.</p></div>
+      <div class="fcard"><div class="ic">🧠</div><h3>기억하는 직원</h3><p>지난 작업을 기억해, 다음에 더 맞춤한 결과를 냅니다.</p></div>
+      <div class="fcard"><div class="ic">🇰🇷</div><h3>100% 한국어</h3><p>한국 1인 사업가를 위해, 쉬운 우리말로만 답합니다.</p></div>
     </div>
   </div>
 </section>
 
-<section id="signup" class="cta-final">
+<section id="price">
   <div class="wrap">
-    <h2 class="font-display">오늘, 첫 직원을 출근시켜 보세요</h2>
-    <p>이메일만 남기면 체험판 링크를 보내드립니다.</p>
-    <form class="signup-form" onsubmit="return handleSignup(event)">
-      <input type="email" placeholder="이메일 주소" required id="email-input">
-      <button type="submit" class="btn btn-primary">시작하기</button>
-    </form>
-    <p class="form-note" id="form-note">무료 체험 · 신용카드 불필요</p>
+    <div class="sec-head">
+      <span class="pill">요금</span>
+      <h2>쓴 만큼만, 투명하게</h2>
+      <p>아래는 출시 예정 요금제 예시입니다. 정찰제로, 가입 후 갑자기 조건을 바꾸지 않습니다.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <h3>체험</h3>
+        <div class="price">0<small>원</small></div>
+        <div class="credit">가입 크레딧 300</div>
+        <ul><li>13명 비비 전부 사용</li><li>총괄 검수 · 빠른 모드</li><li>로그인 없이 둘러보기</li></ul>
+        <a class="btn ghost" href="/">무료로 시작</a>
+      </div>
+      <div class="plan hot">
+        <div class="tag">가장 인기</div>
+        <h3>사업가</h3>
+        <div class="price">19,900<small>원/월</small></div>
+        <div class="credit">매월 크레딧 3,000</div>
+        <ul><li>체험의 모든 기능</li><li>전문지식·브랜드 가이드 등록</li><li>작업 기록 보관</li><li>우선 응대</li></ul>
+        <a class="btn grad" href="/">시작하기</a>
+      </div>
+      <div class="plan">
+        <h3>팀</h3>
+        <div class="price">49,900<small>원/월</small></div>
+        <div class="credit">매월 크레딧 9,000</div>
+        <ul><li>사업가의 모든 기능</li><li>크레딧 대량 · 이월</li><li>맞춤 비비 확장</li></ul>
+        <a class="btn ghost" href="/">문의하기</a>
+      </div>
+    </div>
+    <p style="text-align:center; color:var(--soft); font-size:12.5px; margin-top:18px;">※ 가격은 출시 시 확정되며 예시입니다. 결제 기능은 준비 중입니다.</p>
+  </div>
+</section>
+
+<section class="bg2">
+  <div class="wrap">
+    <div class="sec-head"><span class="pill">FAQ</span><h2>자주 묻는 질문</h2></div>
+    <div class="faq">
+      <details open><summary>비비는 진짜로 조사를 하나요?</summary><p>네. 비비는 실제로 웹을 검색해 사실을 확인하고, 총괄 비비가 근거를 다시 검수합니다. 지어낸 내용은 '확인 안 됨'으로 솔직히 표시합니다.</p></details>
+      <details><summary>개발을 몰라도 쓸 수 있나요?</summary><p>네. 업무를 한국어로 적고 비비를 고르기만 하면 됩니다. 예시 버튼과 자동 추천이 도와줍니다.</p></details>
+      <details><summary>크레딧은 어떻게 차감되나요?</summary><p>업무 결과(보고서)가 나올 때만 딱 한 번 차감됩니다. 도중에 오류가 나면 차감하지 않습니다. 시작 전에 예상 차감량도 보여드려요.</p></details>
+      <details><summary>실제로 SNS에 글이 올라가나요?</summary><p>아니요. 비비는 초안까지만 만들고, 실제 게시·발송은 대표님이 직접 확인 후 하십니다. (안전을 위한 원칙입니다)</p></details>
+      <details><summary>내 자료가 다른 사람에게 보이나요?</summary><p>아니요. 등록한 전문지식과 작업 기억은 회원별로 분리되어 보관됩니다.</p></details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="band">
+      <h2>오늘, 나만의 AI 회사를 차리세요</h2>
+      <p>가입하면 무료 크레딧 300. 카드 등록 없이 바로 시작할 수 있어요.</p>
+      <a class="btn" href="/">무료로 시작하기</a>
+    </div>
   </div>
 </section>
 
 <footer>
-  <div class="wrap">© 2026 가상오피스. 1인 사업가를 위한 AI 팀.</div>
+  <div class="wrap">비비 — 잠들지 않는 AI 직원팀 · © 2026 가상오피스</div>
 </footer>
 
 <script>
-  function handleSignup(e){
-    e.preventDefault();
-    const email = document.getElementById('email-input').value;
-    document.getElementById('form-note').textContent = email + ' 로 체험판 안내를 보내드릴게요 (데모: 실제 발송 아님)';
-    return false;
-  }
+var CREW = [
+  { s:'01', role:'전략기획 담당', color:'#378ADD', img:'a', rating:85, d:'사업 방향·신규 아이템·성장 전략을 조사하고 제안해요.' },
+  { s:'02', role:'재무분석 담당', color:'#2B9E8F', img:'b', rating:82, d:'매출·비용·수익성 같은 숫자를 정리하고 분석해요.' },
+  { s:'03', role:'SEO 담당', color:'#5B8DEF', img:'a', rating:82, d:'검색 노출을 높일 키워드와 콘텐츠 구조를 제안해요.' },
+  { s:'04', role:'고객문의 응대 담당', color:'#D85A30', img:'b', rating:84, d:'고객 문의에 대한 답변 초안을 써요.' },
+  { s:'05', role:'영업관리 담당', color:'#C2472B', img:'a', rating:84, d:'영업 절차·고객 관리·제안서 구조를 정리해요.' },
+  { s:'06', role:'채용 담당', color:'#A8452E', img:'b', rating:82, d:'채용 공고문과 지원자 검토 기준을 만들어요.' },
+  { s:'07', role:'총괄(검수·판단)', color:'#7A5CFF', img:'b', rating:88, d:'모든 비비의 결과를 검수하고 보고서를 올려요.' },
+  { s:'08', role:'SNS·블로그 콘텐츠', color:'#C9832E', img:'a', rating:85, d:'SNS·블로그에 올릴 글 초안을 써요.' },
+  { s:'09', role:'카피라이터', color:'#B96F22', img:'b', rating:84, d:'광고 문구·상세페이지 문구를 써요.' },
+  { s:'10', role:'이메일 담당', color:'#CC9A3C', img:'a', rating:85, d:'고객·거래처에 보낼 이메일 초안을 써요.' },
+  { s:'11', role:'성장 코치', color:'#18B888', img:'b', rating:83, d:'업무 습관·목표 관리·우선순위를 도와요.' },
+  { s:'12', role:'이커머스 운영', color:'#3F8F5C', img:'a', rating:84, d:'스마트스토어·쿠팡 운영을 정리해요.' },
+  { s:'13', role:'비서 (이미지 기획)', color:'#6BA36E', img:'b', rating:85, d:'이미지 기획안(장면·문구·구도)을 글로 써요.' }
+];
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  const desks = {w1:{left:14,top:32}, w2:{left:32,top:32}, w3:{left:59,top:32}, mgr:{left:85,top:44}};
-  const tray = {left:85, top:14};
-  function moveTo(id,pos,msg){
-    const el = document.getElementById(id);
-    el.style.left = pos.left + '%';
-    el.style.top = pos.top + '%';
-    const tag = el.querySelector('.tag');
-    if(msg){ tag.textContent = msg; tag.classList.add('show'); }
-    else { tag.classList.remove('show'); }
-  }
-  const seq = [
-    ()=>{ moveTo('w1',desks.w1,'자료 조사 중'); moveTo('w2',desks.w2,'자료 조사 중'); log('재민, 다은 — 자료 조사 중'); },
-    ()=>{ moveTo('w1',tray,'제출!'); log('재민 — 제출함으로 이동'); },
-    ()=>{ moveTo('w2',tray,'제출!'); log('다은 — 제출함으로 이동'); },
-    ()=>{ moveTo('w3',tray,'검증 중'); log('승효 — 자료 신뢰도 검증 중'); },
-    ()=>{ moveTo('w1',desks.w1,null); moveTo('w2',desks.w2,null); moveTo('w3',desks.w3,null); log('검증 완료, 팀장에게 전달'); },
-    ()=>{ moveTo('mgr',tray,'검토 중'); log('이지혜 — 최종 검토 중'); },
-    ()=>{ moveTo('mgr',tray,'승인 완료!'); log('이지혜 — 승인 완료, 대표님께 전달'); },
-    ()=>{ moveTo('mgr',desks.mgr,null); log('오늘의 업무를 시작할게요'); },
-  ];
-  function log(t){ document.getElementById('log').textContent = t; }
-  let i = 0;
-  function tick(){ seq[i](); i = (i+1) % seq.length; }
-  setInterval(tick, 1900);
-  tick();
+var tg = document.getElementById('teamGrid');
+CREW.forEach(function(p){
+  var c = document.createElement('div');
+  c.className = 'tcard';
+  c.style.setProperty('--rc', p.color);
+  c.innerHTML = '<div class="sc"><img src="/assets/char-bibi-' + p.img + '.png" alt=""></div>'
+    + '<div class="bd"><div class="r"><b>' + p.rating + '</b><span class="nm">비비-' + p.s + '<small>' + esc(p.role) + '</small></span></div>'
+    + '<div class="d">' + esc(p.d) + '</div></div>';
+  tg.appendChild(c);
+});
+
+var strip = document.getElementById('miniStrip');
+[CREW[0], CREW[6], CREW[7], CREW[3], CREW[10]].forEach(function(p){
+  var c = document.createElement('div');
+  c.className = 'mini';
+  c.style.setProperty('--rc', p.color);
+  c.innerHTML = '<div class="sc"><img src="/assets/char-bibi-' + p.img + '.png" alt=""></div>'
+    + '<div class="bd"><div class="r"><b>' + p.rating + '</b><span>비비-' + p.s + '<small>' + esc(p.role) + '</small></span></div></div>';
+  strip.appendChild(c);
+});
 </script>
 </body>
 </html>
