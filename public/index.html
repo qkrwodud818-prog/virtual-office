@@ -48,64 +48,63 @@
   button.go{background:var(--sage);}
   button.small{padding:5px 10px; font-size:12px;}
 
-  /* ── 사무실 ── */
+  /* ── 비비 오피스 (카드) ── */
   .office{position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
   .office-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
   .office-head h2{font-family:var(--display); font-weight:400; font-size:16px; margin:0;}
   .badge{display:inline-block; min-width:16px; padding:1px 6px; margin-left:6px; border-radius:9px;
     background:var(--wood); color:#fff; font-size:10px; font-family:var(--mono); text-align:center; vertical-align:2px;}
-
-  .floor{position:relative; height:280px; border-radius:8px; overflow:hidden;
-    background:#EDEAE2 url('/assets/office-bg.jpg') center/cover no-repeat;
-    border:1px solid var(--line);
-  }
-  .room{position:absolute; top:0; bottom:0;}
-  .room .tag{position:absolute; top:6px; left:6px; font-size:10.5px; font-weight:700; padding:3px 8px;
-    letter-spacing:.02em; background:rgba(255,255,255,.88); border-radius:8px;}
-  #room-research{left:0; width:30%;}
-  #room-research .tag{color:var(--jaemin);}
-  #room-verify{left:30%; width:22%;}
-  #room-verify .tag{color:var(--seunghyo);}
-  #room-lead{left:52%; width:16%;}
-  #room-lead .tag{color:var(--jihye);}
-  #room-content{left:68%; width:32%;}
-  #room-content .tag{color:var(--haneul);}
-
-  .char{position:absolute; width:40px; margin-left:-20px; text-align:center;
-    transition:left .9s ease, top .9s ease;}
-  .char img.sprite{width:40px; display:block; margin:0 auto; position:relative; z-index:2;
-    filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));}
-  .char.flip img.sprite{transform:scaleX(-1);}
-  .char .dot{position:absolute; top:-3px; right:6px; width:9px; height:9px; border-radius:50%;
-    border:2px solid #fff; z-index:3; box-shadow:0 1px 2px rgba(0,0,0,.2);}
-  .char .nm{font-size:10px; color:var(--ink); font-weight:600; margin-top:1px; white-space:nowrap;
-    background:rgba(255,255,255,.85); border-radius:6px; padding:0 4px; display:inline-block;}
-  .char.act img.sprite{filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 0 5px currentColor);}
-  @keyframes walkBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
-  .char.walking img.sprite{ animation:walkBounce .26s ease-in-out infinite; }
-
-  .bubble{position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:6px;
-    background:#fff; border:1px solid var(--line); border-radius:8px; padding:5px 8px;
-    font-size:10px; line-height:1.35; color:var(--ink); width:max-content; max-width:128px;
-    box-shadow:0 2px 6px rgba(0,0,0,.12); opacity:0; transition:opacity .2s; pointer-events:none; z-index:4;}
-  .bubble:after{content:''; position:absolute; top:100%; left:50%; margin-left:-4px;
-    border:4px solid transparent; border-top-color:#fff;}
-  .char.talk .bubble{opacity:1;}
-  .office.bubbles-off .bubble{display:none;}
-
   .log{margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
     font-size:13px; color:var(--ink-soft); min-height:20px;}
   .log b{color:var(--ink); font-weight:600;}
 
-  /* ── 직원 현황 ── */
-  .crew{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-bottom:18px;}
-  .crew .c{background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 8px; text-align:center; position:relative;}
-  .crew .c .n{font-size:13px; font-weight:600; display:inline-block;}
-  .crew .c .edit{border:none; background:none; padding:0; margin-left:3px; font-size:11px; color:var(--ink-soft); cursor:pointer; vertical-align:1px;}
-  .crew .c .r{font-size:10px; color:var(--ink-soft); margin-bottom:3px;}
-  .crew .c .s{font-size:11px; color:var(--ink-soft);}
-  .crew .c .s.working{color:var(--wood); font-weight:600;}
-  .crew .c .s.done{color:var(--sage);}
+  .vgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:12px;}
+  .vcard{--rc:#666; --hue:0deg; position:relative; border-radius:14px; overflow:hidden;
+    border:1px solid var(--line); background:#0b1230; box-shadow:0 4px 14px rgba(0,0,0,.12);}
+  .vcard .accent{position:absolute; top:0; left:0; right:0; height:3px; background:var(--rc); z-index:5;}
+  /* 공상과학 사무실 배경 */
+  .vcard .scene{position:relative; height:170px; overflow:hidden;
+    background:radial-gradient(130% 90% at 50% 20%, rgba(90,120,255,.32), transparent 62%),
+      linear-gradient(180deg,#16204a,#0a1030);}
+  .vcard .scene:before{content:''; position:absolute; left:-25%; right:-25%; bottom:0; height:52%;
+    background:repeating-linear-gradient(90deg, rgba(120,160,255,.20) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(0deg, rgba(120,160,255,.16) 0 1px, transparent 1px 18px);
+    transform:perspective(120px) rotateX(60deg); transform-origin:bottom; z-index:1;}
+  .vcard .scene:after{content:''; position:absolute; top:8px; left:12px; right:12px; height:22px; border-radius:6px;
+    background:linear-gradient(90deg, rgba(120,200,255,.28), rgba(180,140,255,.28));
+    box-shadow:0 0 16px rgba(120,180,255,.35); opacity:.7; z-index:0;}
+  /* 캐릭터 뒤 역할색 후광 */
+  .vcard .scene .glow{position:absolute; left:50%; top:38px; width:96px; height:96px; transform:translateX(-50%);
+    border-radius:50%; background:var(--rc); opacity:.18; filter:blur(20px); z-index:1;}
+  .vcard .spr{position:absolute; left:50%; top:6px; transform:translateX(-50%); width:118px; z-index:2;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));}
+  .vcard .spr img{width:100%; display:block;}
+  .vcard .ov{position:absolute; top:7px; right:8px; z-index:3;
+    font-size:18px; opacity:0; transition:opacity .25s; filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+  /* 상태 5단계 */
+  @keyframes vwork{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-3px);}}
+  .vcard.st-idle .spr{filter:drop-shadow(0 4px 6px rgba(0,0,0,.55)) grayscale(.4) brightness(.72);}
+  .vcard.st-think .spr{filter:drop-shadow(0 0 8px var(--rc)) drop-shadow(0 4px 6px rgba(0,0,0,.55));}
+  .vcard.st-work .spr{animation:vwork .55s ease-in-out infinite;
+    filter:drop-shadow(0 0 11px var(--rc)) drop-shadow(0 4px 6px rgba(0,0,0,.55));}
+  .vcard.st-submit .spr{animation:vwork .45s ease-in-out infinite;
+    filter:drop-shadow(0 0 9px var(--rc)) drop-shadow(0 4px 6px rgba(0,0,0,.55));}
+  .vcard.st-done .spr{filter:drop-shadow(0 0 13px #4fd18b) drop-shadow(0 4px 6px rgba(0,0,0,.55));}
+  .vcard.st-think .ov,.vcard.st-work .ov,.vcard.st-submit .ov,.vcard.st-done .ov{opacity:1;}
+
+  .vcard .body{padding:10px 12px 12px; background:#fff; color:var(--ink);}
+  .vcard .id{display:flex; align-items:center; gap:8px;}
+  .vcard .rating{font-family:var(--display); font-size:22px; color:var(--rc); line-height:.9;}
+  .vcard .who2{font-weight:700; font-size:13px; line-height:1.2;}
+  .vcard .who2 small{display:block; font-weight:500; font-size:10px; color:var(--ink-soft);}
+  .vcard .stt{margin:8px 0; font-size:11px; font-weight:700; color:var(--ink-soft);}
+  .vcard.st-think .stt,.vcard.st-work .stt,.vcard.st-submit .stt{color:var(--wood);}
+  .vcard.st-done .stt{color:var(--sage);}
+  .vcard .stat{display:flex; align-items:center; gap:6px; margin-top:3px; font-size:10px;}
+  .vcard .stat .lb{width:26px; color:var(--ink-soft);}
+  .vcard .stat .track{flex:1; height:5px; background:var(--line); border-radius:4px; overflow:hidden;}
+  .vcard .stat .fillb{height:100%; background:var(--rc); border-radius:4px;}
+  .vcard .stat .vv{width:18px; text-align:right; font-family:var(--mono); color:var(--ink);}
 
   #result:empty{display:none;}
 
@@ -304,22 +303,12 @@
 
     <div class="office">
       <div class="office-head">
-        <h2>사무실</h2>
-        <div style="display:flex; gap:6px;">
-          <button type="button" class="ghost small" id="bubbleToggleBtn">말풍선 끄기</button>
-          <button type="button" class="ghost small" id="feedOpenBtn">자료조사 과정 보기<span class="badge" id="feedBadge" style="display:none;">0</span></button>
-        </div>
+        <h2>비비 오피스 <span style="font-size:11px; color:var(--ink-soft); font-family:var(--body);">— 로봇인간 '비비' 13기</span></h2>
+        <button type="button" class="ghost small" id="feedOpenBtn">진행 과정 보기<span class="badge" id="feedBadge" style="display:none;">0</span></button>
       </div>
-      <div class="floor" id="floor">
-        <div class="room" id="room-research"><span class="tag">전략·분석팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-verify"><span class="tag">고객·영업팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-lead"><span class="tag">총괄실</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-content"><span class="tag">콘텐츠·운영팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-      </div>
-      <div class="log" id="log">직원들이 자리에서 대기하고 있습니다.</div>
+      <div class="vgrid" id="vgrid"></div>
+      <div class="log" id="log">비비들이 대기 중입니다.</div>
     </div>
-
-    <div class="crew" id="crew"></div>
 
     <div id="result"></div>
 
@@ -435,24 +424,26 @@ function saveCustomName(orig, newName){
 /* ────────── 직원 정보 (내부 식별용 원래 이름은 그대로 사용, 화면 표시만 바뀜) ──────────
    신트라 방식: 역할은 고정, 대표가 이번 업무에 쓸 담당자를 고른다. 담당자끼리는 서로 소통하지 않고
    전부 총괄AI에게만 보고한다. */
+// 모든 캐릭터는 '비비'. 일련번호(비비-01~13)와 역할로 구분. hue는 옷 색을 역할별로 다르게 보이게 함.
+// stats는 피파 온라인 카드처럼 역할별 능력치(0~99): 분석·창의·속도·정확·소통.
 var CREW = [
   // 전략·분석팀
-  { name:'전략기획', role:'전략기획 담당',       color:'#378ADD', desk:{x:6,  y:58}, sprite:'man',   desc:'사업 방향·신규 아이템·성장 전략을 조사하고 제안해요.' },
-  { name:'재무분석', role:'재무분석 담당',       color:'#2B9E8F', desk:{x:15, y:58}, sprite:'woman', desc:'매출·비용·수익성 같은 숫자를 정리하고 분석해요.' },
-  { name:'SEO',      role:'SEO 담당',            color:'#5B8DEF', desk:{x:24, y:58}, sprite:'man',   desc:'검색 노출을 높일 키워드와 콘텐츠 구조를 제안해요.' },
+  { name:'전략기획', role:'전략기획 담당',       color:'#378ADD', sprite:'man',   hue:0,   stats:{분석:92,창의:85,속도:78,정확:88,소통:80}, desc:'사업 방향·신규 아이템·성장 전략을 조사하고 제안해요.' },
+  { name:'재무분석', role:'재무분석 담당',       color:'#2B9E8F', sprite:'woman', hue:150, stats:{분석:95,창의:68,속도:80,정확:95,소통:70}, desc:'매출·비용·수익성 같은 숫자를 정리하고 분석해요.' },
+  { name:'SEO',      role:'SEO 담당',            color:'#5B8DEF', sprite:'man',   hue:210, stats:{분석:88,창의:78,속도:85,정확:86,소통:74}, desc:'검색 노출을 높일 키워드와 콘텐츠 구조를 제안해요.' },
   // 고객·영업팀
-  { name:'고객문의', role:'고객문의 응대 담당',   color:'#D85A30', desk:{x:34, y:58}, sprite:'woman', desc:'고객 문의에 대한 답변 초안을 써요. (실제 발송 안 함)' },
-  { name:'영업관리', role:'영업관리 담당',       color:'#C2472B', desk:{x:41, y:58}, sprite:'man',   desc:'영업 절차·고객 관리·제안서 구조를 정리해요.' },
-  { name:'채용',     role:'채용 담당',           color:'#A8452E', desk:{x:48, y:58}, sprite:'woman', desc:'채용 공고문과 지원자 검토 기준을 만들어요.' },
+  { name:'고객문의', role:'고객문의 응대 담당',   color:'#D85A30', sprite:'woman', hue:20,  stats:{분석:74,창의:80,속도:88,정확:82,소통:95}, desc:'고객 문의에 대한 답변 초안을 써요. (실제 발송 안 함)' },
+  { name:'영업관리', role:'영업관리 담당',       color:'#C2472B', sprite:'man',   hue:10,  stats:{분석:82,창의:80,속도:84,정확:80,소통:92}, desc:'영업 절차·고객 관리·제안서 구조를 정리해요.' },
+  { name:'채용',     role:'채용 담당',           color:'#A8452E', sprite:'woman', hue:340, stats:{분석:80,창의:74,속도:82,정확:85,소통:90}, desc:'채용 공고문과 지원자 검토 기준을 만들어요.' },
   // 총괄실
-  { name:'총괄AI',   role:'총괄(검수·판단)',      color:'#7F77DD', desk:{x:60, y:58}, sprite:'woman', desc:'모든 담당자 결과를 검수하고 대표님께 보고서를 올려요.' },
-  // 콘텐츠·운영팀 (2줄)
-  { name:'SNS콘텐츠', role:'SNS·블로그 콘텐츠 담당', color:'#C9832E', desk:{x:73, y:38}, sprite:'man',   desc:'SNS·블로그에 올릴 글 초안을 써요. (실제 게시 안 함)' },
-  { name:'카피라이터', role:'카피라이터',            color:'#B96F22', desk:{x:84, y:38}, sprite:'woman', desc:'광고 문구·제품 설명·상세페이지 문구를 써요.' },
-  { name:'이메일',    role:'이메일 담당',           color:'#CC9A3C', desk:{x:95, y:38}, sprite:'man',   desc:'고객·거래처에 보낼 이메일 초안을 써요. (실제 발송 안 함)' },
-  { name:'성장코치',  role:'성장 코치',             color:'#4F7A56', desk:{x:73, y:76}, sprite:'woman', desc:'대표님 업무 습관·목표 관리·우선순위를 도와요.' },
-  { name:'이커머스',  role:'이커머스 운영 담당',     color:'#3F8F5C', desk:{x:84, y:76}, sprite:'man',   desc:'스마트스토어·쿠팡 같은 판매채널 운영을 정리해요.' },
-  { name:'비서',      role:'비서 (이미지 기획)',    color:'#6BA36E', desk:{x:95, y:76}, sprite:'woman', desc:'이미지가 필요한 곳의 기획안(장면·문구·구도)을 글로 써요.' }
+  { name:'총괄AI',   role:'총괄(검수·판단)',      color:'#7F77DD', sprite:'woman', hue:270, stats:{분석:94,창의:83,속도:80,정확:95,소통:90}, desc:'모든 담당자 결과를 검수하고 대표님께 보고서를 올려요.' },
+  // 콘텐츠·운영팀
+  { name:'SNS콘텐츠', role:'SNS·블로그 콘텐츠 담당', color:'#C9832E', sprite:'man',   hue:40,  stats:{분석:78,창의:95,속도:88,정확:78,소통:88}, desc:'SNS·블로그에 올릴 글 초안을 써요. (실제 게시 안 함)' },
+  { name:'카피라이터', role:'카피라이터',            color:'#B96F22', sprite:'woman', hue:35,  stats:{분석:76,창의:96,속도:85,정확:80,소통:84}, desc:'광고 문구·제품 설명·상세페이지 문구를 써요.' },
+  { name:'이메일',    role:'이메일 담당',           color:'#CC9A3C', sprite:'man',   hue:50,  stats:{분석:80,창의:82,속도:86,정확:88,소통:90}, desc:'고객·거래처에 보낼 이메일 초안을 써요. (실제 발송 안 함)' },
+  { name:'성장코치',  role:'성장 코치',             color:'#4F7A56', sprite:'woman', hue:120, stats:{분석:84,창의:80,속도:78,정확:82,소통:93}, desc:'대표님 업무 습관·목표 관리·우선순위를 도와요.' },
+  { name:'이커머스',  role:'이커머스 운영 담당',     color:'#3F8F5C', sprite:'man',   hue:135, stats:{분석:86,창의:80,속도:88,정확:85,소통:82}, desc:'스마트스토어·쿠팡 같은 판매채널 운영을 정리해요.' },
+  { name:'비서',      role:'비서 (이미지 기획)',    color:'#6BA36E', sprite:'woman', hue:100, stats:{분석:80,창의:88,속도:90,정확:82,소통:86}, desc:'이미지가 필요한 곳의 기획안(장면·문구·구도)을 글로 써요.' }
 ];
 // 대표가 업무마다 고를 수 있는 담당자 (신트라 12헬퍼와 1:1 대응). 총괄AI는 항상 자동 참여.
 var PICKABLE = ['전략기획','고객문의','이커머스','재무분석','이메일','성장코치','영업관리','카피라이터','채용','SEO','SNS콘텐츠','비서'];
@@ -464,54 +455,42 @@ var feedUnread = 0, feedOpen = false;
 var currentView = 'office';
 var stats = { completedJobs:0, researchSteps:0, retries:0, errors:0, lastStart:'-' };
 
-/* ────────── 화면 만들기 ────────── */
-function buildOffice(){
-  var floor = document.getElementById('floor');
-  var crew = document.getElementById('crew');
-  CREW.forEach(function(p){
-    var c = document.createElement('div');
-    c.className = 'char';
-    c.style.color = p.color;
-    c.style.left = p.desk.x + '%';
-    c.style.top = p.desk.y + '%';
-    c.innerHTML = '<div class="bubble"></div>'
-                + '<img class="sprite" src="/assets/char-' + p.sprite + '.png" alt="">'
-                + '<span class="dot" style="background:' + p.color + '"></span>'
-                + '<div class="nm">' + esc(displayName(p.name)) + '</div>';
-    floor.appendChild(c);
+/* ────────── 화면 만들기 (비비 능력치 카드) ────────── */
+var STAT_AXES = ['분석','창의','속도','정확','소통'];
+function buildCards(){
+  var grid = document.getElementById('vgrid');
+  CREW.forEach(function(p, idx){
+    var serial = ('0' + (idx + 1)).slice(-2);
+    p.serial = serial;
+    var sum = 0;
+    var statsHTML = STAT_AXES.map(function(ax){
+      var v = p.stats[ax]; sum += v;
+      return '<div class="stat"><span class="lb">' + ax + '</span>'
+        + '<span class="track"><span class="fillb" style="width:' + v + '%"></span></span>'
+        + '<span class="vv">' + v + '</span></div>';
+    }).join('');
+    var overall = Math.round(sum / STAT_AXES.length);
 
     var card = document.createElement('div');
-    card.className = 'c';
+    card.className = 'vcard st-idle';
+    card.style.setProperty('--rc', p.color);
+    card.style.setProperty('--hue', (p.hue || 0) + 'deg');
     card.title = p.desc || '';
-    card.innerHTML = '<div class="r">' + p.role + '</div>'
-      + '<div class="n"><span class="nmtext">' + esc(displayName(p.name)) + '</span>'
-      + '<button type="button" class="edit" title="이름 바꾸기" data-orig="' + esc(p.name) + '">✎</button></div>'
-      + '<div class="s">대기 중</div>'
-      + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '');
-    crew.appendChild(card);
+    card.innerHTML =
+      '<div class="accent"></div>'
+      + '<div class="scene"><div class="glow"></div><div class="ov"></div><div class="spr"><img src="/assets/char-bibi-' + (p.sprite === 'man' ? 'a' : 'b') + '.png" alt=""></div></div>'
+      + '<div class="body">'
+      +   '<div class="id"><span class="rating">' + overall + '</span>'
+      +     '<span class="who2">비비-' + serial + '<small>' + esc(p.role) + '</small></span></div>'
+      +   '<div class="stt">대기 중</div>'
+      +   statsHTML
+      + '</div>';
+    grid.appendChild(card);
 
-    els[p.name] = {
-      char:c, status:card.querySelector('.s'), bubble:c.querySelector('.bubble'),
-      nmSpan:card.querySelector('.nmtext'), charNm:c.querySelector('.nm'), info:p, lastTime:''
-    };
-  });
-
-  crew.querySelectorAll('.edit').forEach(function(btn){
-    btn.onclick = function(){
-      var orig = btn.getAttribute('data-orig');
-      var cur = displayName(orig);
-      var next = window.prompt('직원의 새 이름을 입력해 주세요.\n(화면에 보이는 이름만 바뀌고, 보고서 내용 속 이름은 바뀌지 않습니다)', cur);
-      if(next === null) return;
-      next = next.trim();
-      if(!next) return;
-      saveCustomName(orig, next);
-      var e = els[orig];
-      e.nmSpan.textContent = next;
-      e.charNm.textContent = next;
-    };
+    els[p.name] = { card:card, status:card.querySelector('.stt'), ov:card.querySelector('.ov'), info:p, lastTime:'' };
   });
 }
-buildOffice();
+buildCards();
 
 /* ────────── 업무마다 담당자 고르기 ────────── */
 function buildAgentPicker(){
@@ -528,44 +507,33 @@ function selectedAgents(){
   return Array.prototype.slice.call(document.querySelectorAll('#agentPicker input:checked')).map(function(i){ return i.value; });
 }
 
-/* ────────── 캐릭터 상태 ────────── */
+/* ────────── 캐릭터 상태 (5단계) ────────── */
+var thinkTimers = {};
 function setState(name, state, text, time){
   var e = els[name];
   if(!e) return;
 
   if(text){
     e.status.textContent = text;
-    e.status.className = 's' + (state === 'working' ? ' working' : (state === 'done' ? ' done' : ''));
-    e.bubble.textContent = text;
+    e.status.className = 'stt' + (state === 'working' ? ' working' : (state === 'done' ? ' done' : ''));
   }
   if(time) e.lastTime = time;
-  e.char.classList.toggle('talk', state !== 'idle' && !!text);
 
-  clearTimeout(backTimers[name]);
-  e.char.classList.remove('walking');
-  if(state === 'submit'){
-    // 팀장실 입구까지 걸어가서 결과를 전달하고 자리로 돌아온다
-    e.char.classList.remove('act');
-    e.char.classList.add('walking');
-    e.char.classList.toggle('flip', HANDOFF.x < e.info.desk.x);
-    e.char.style.left = HANDOFF.x + '%';
-    e.char.style.top  = HANDOFF.y + '%';
-    backTimers[name] = setTimeout(function(){
-      e.char.classList.remove('walking');
-      backTimers[name] = setTimeout(function(){
-        e.char.classList.add('walking');
-        e.char.classList.toggle('flip', e.info.desk.x < HANDOFF.x);
-        e.char.style.left = e.info.desk.x + '%';
-        e.char.style.top  = e.info.desk.y + '%';
-        backTimers[name] = setTimeout(function(){
-          e.char.classList.remove('walking');
-        }, 900);
-      }, 500);
-    }, 900);
+  clearTimeout(thinkTimers[name]);
+  var card = e.card;
+  card.classList.remove('st-idle','st-think','st-work','st-submit','st-done');
+  if(state === 'working'){
+    // 작업 시작 시 잠깐 '생각 중' → '작업 중'
+    card.classList.add('st-think'); e.ov.textContent = '💭';
+    thinkTimers[name] = setTimeout(function(){
+      card.classList.remove('st-think'); card.classList.add('st-work'); e.ov.textContent = '✍️';
+    }, 700);
+  } else if(state === 'submit'){
+    card.classList.add('st-submit'); e.ov.textContent = '📤';
+  } else if(state === 'done'){
+    card.classList.add('st-done'); e.ov.textContent = '✅';
   } else {
-    e.char.style.left = e.info.desk.x + '%';
-    e.char.style.top  = e.info.desk.y + '%';
-    e.char.classList.toggle('act', state === 'working');
+    card.classList.add('st-idle'); e.ov.textContent = '';
   }
 }
 
@@ -617,7 +585,7 @@ function renderDashboard(){
     var tr = document.createElement('tr');
     var stCls = e.status.className.replace('s', '').trim();
     tr.innerHTML =
-      '<td>' + esc(displayName(p.name)) + '</td>' +
+      '<td>비비-' + (p.serial || '') + '</td>' +
       '<td>' + esc(p.role) + '</td>' +
       '<td class="st ' + esc(stCls) + '">' + esc(e.status.textContent) + '</td>' +
       '<td class="st">' + esc(e.lastTime || '-') + '</td>';
@@ -648,22 +616,6 @@ function markUnread(){
 document.getElementById('feedOpenBtn').onclick = openFeed;
 document.getElementById('feedClose').onclick = closeFeed;
 
-/* ────────── 말풍선 끄기/켜기 ────────── */
-var BUBBLE_KEY = 'bubblesOff_v1';
-var bubbleBtn = document.getElementById('bubbleToggleBtn');
-var officeBox = document.querySelector('.office');
-function applyBubbleState(off){
-  officeBox.classList.toggle('bubbles-off', off);
-  bubbleBtn.textContent = off ? '말풍선 켜기' : '말풍선 끄기';
-}
-var bubblesOff = false;
-try { bubblesOff = localStorage.getItem(BUBBLE_KEY) === '1'; } catch(e){}
-applyBubbleState(bubblesOff);
-bubbleBtn.onclick = function(){
-  bubblesOff = !bubblesOff;
-  applyBubbleState(bubblesOff);
-  try { localStorage.setItem(BUBBLE_KEY, bubblesOff ? '1' : '0'); } catch(e){}
-};
 feedOverlay.addEventListener('click', function(e){ if(e.target === feedOverlay) closeFeed(); });
 
 /* ────────── 진행 기록 그리기 ────────── */
