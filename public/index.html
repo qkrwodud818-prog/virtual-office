@@ -35,6 +35,10 @@
   .ask label{display:block; font-size:13px; font-weight:600; margin-bottom:8px;}
   .ask textarea{width:100%; min-height:70px; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
     font-family:var(--body); font-size:14px; line-height:1.6; resize:vertical; background:var(--bg); color:var(--ink);}
+  .agentPicker{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+  .agentPicker label{display:flex; align-items:center; gap:5px; font-size:12px; font-weight:500;
+    background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:6px 11px; cursor:pointer;}
+  .agentPicker input{accent-color:var(--primary);}
   .ask .row{display:flex; gap:8px; align-items:center; margin-top:10px;}
   .hint{font-size:12px; color:var(--ink-soft); flex:1;}
   button{font-family:var(--body); padding:11px 18px; border:none; border-radius:8px; background:var(--primary);
@@ -58,13 +62,13 @@
   .room{position:absolute; top:0; bottom:0;}
   .room .tag{position:absolute; top:6px; left:6px; font-size:10.5px; font-weight:700; padding:3px 8px;
     letter-spacing:.02em; background:rgba(255,255,255,.88); border-radius:8px;}
-  #room-research{left:0; width:32%;}
+  #room-research{left:0; width:30%;}
   #room-research .tag{color:var(--jaemin);}
-  #room-verify{left:32%; width:20%;}
+  #room-verify{left:30%; width:22%;}
   #room-verify .tag{color:var(--seunghyo);}
-  #room-lead{left:52%; width:23%;}
+  #room-lead{left:52%; width:16%;}
   #room-lead .tag{color:var(--jihye);}
-  #room-content{left:75%; width:25%;}
+  #room-content{left:68%; width:32%;}
   #room-content .tag{color:var(--haneul);}
 
   .char{position:absolute; width:40px; margin-left:-20px; text-align:center;
@@ -94,7 +98,7 @@
   .log b{color:var(--ink); font-weight:600;}
 
   /* ── 직원 현황 ── */
-  .crew{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:18px;}
+  .crew{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-bottom:18px;}
   .crew .c{background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 8px; text-align:center; position:relative;}
   .crew .c .n{font-size:13px; font-weight:600; display:inline-block;}
   .crew .c .edit{border:none; background:none; padding:0; margin-left:3px; font-size:11px; color:var(--ink-soft); cursor:pointer; vertical-align:1px;}
@@ -157,12 +161,120 @@
   .dash-table .st{font-size:12px; color:var(--ink-soft);}
   .dash-table .st.working{color:var(--wood); font-weight:600;}
   .dash-table .st.done{color:var(--sage);}
+
+  /* ── 로그인/회원가입 화면 ── */
+  .auth-overlay{display:none; position:fixed; inset:0; background:var(--bg); z-index:80;
+    align-items:center; justify-content:center; padding:20px;}
+  .auth-overlay.show{display:flex;}
+  .auth-card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px 26px;
+    width:100%; max-width:380px; box-shadow:0 10px 30px rgba(0,0,0,.08);}
+  .auth-card h2{font-family:var(--display); font-weight:400; font-size:23px; margin:0 0 4px; text-align:center;}
+  .auth-card .sub2{font-size:13px; color:var(--ink-soft); text-align:center; margin:0 0 20px;}
+  .auth-card label{display:block; font-size:13px; font-weight:600; margin:12px 0 5px;}
+  .auth-card input{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
+    font-family:var(--body); font-size:14px; background:var(--bg);}
+  .auth-card button.mainbtn{width:100%; margin-top:18px; padding:13px; font-size:15px;}
+  .auth-switch{text-align:center; margin-top:14px; font-size:13px; color:var(--ink-soft);}
+  .auth-switch a{color:var(--primary); font-weight:600; cursor:pointer; text-decoration:underline;}
+  .auth-err{background:#FBE4E1; color:#8A2E22; border:1px solid #E9BDB5; border-radius:8px;
+    padding:9px 12px; font-size:13px; margin-top:14px; display:none;}
+  .auth-note{font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:16px; line-height:1.5;}
+
+  /* ── 계정 바 (상단) ── */
+  .acctbar{display:none; align-items:center; gap:12px; flex-wrap:wrap;
+    background:#fff; border:1px solid var(--line); border-radius:12px; padding:11px 15px; margin-bottom:16px;}
+  .acctbar.show{display:flex;}
+  .acctbar .who{font-size:13px; font-weight:600;}
+  .acctbar .who span{color:var(--ink-soft); font-weight:400;}
+  .credit-wrap{flex:1; min-width:180px;}
+  .credit-top{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; margin-bottom:4px;}
+  .credit-top b{font-family:var(--display); font-size:16px; color:var(--primary);}
+  .credit-top .warn{color:var(--wood); font-weight:600;}
+  .credit-top .warn.crit{color:#B23B2E;}
+  .gauge{height:9px; background:var(--line); border-radius:6px; overflow:hidden;}
+  .gauge .fill{height:100%; background:var(--sage); border-radius:6px; transition:width .5s ease;}
+  .gauge .fill.low{background:var(--wood);}
+  .gauge .fill.crit{background:#D85A30;}
+  .acctbar .acts{display:flex; gap:6px;}
+
+  /* ── 예시/템플릿 칩 ── */
+  .chiprow{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .chiprow .lbl{font-size:12px; color:var(--ink-soft); align-self:center; margin-right:2px;}
+  .chip{font-size:12px; background:var(--bg); border:1px solid var(--line); border-radius:999px;
+    padding:6px 11px; cursor:pointer; color:var(--ink);}
+  .chip:hover{border-color:var(--primary); color:var(--primary);}
+  .chip .x{color:var(--ink-soft); margin-left:5px; font-weight:700;}
+  .chip.add{border-style:dashed; color:var(--sage);}
+
+  /* ── 담당자 소개 ── */
+  .crew .c .desc{font-size:10px; color:var(--ink-soft); margin-top:5px; line-height:1.35;}
+
+  /* ── 결과 만족도(피드백) ── */
+  .feedback{display:flex; align-items:center; gap:8px; margin-top:12px; padding-top:11px; border-top:1px dotted var(--line);}
+  .feedback .q{font-size:12.5px; color:var(--ink-soft);}
+  .feedback button{background:#fff; border:1px solid var(--line); color:var(--ink); padding:5px 12px; font-size:14px;}
+  .feedback button:hover{border-color:var(--primary);}
+  .feedback .thanks{font-size:12.5px; color:var(--sage); font-weight:600;}
+
+  /* ── SNS 미리보기 ── */
+  .snsprev{margin-top:10px; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; max-width:340px;}
+  .snsprev .bar{display:flex; align-items:center; gap:7px; padding:8px 10px; border-bottom:1px solid var(--line);}
+  .snsprev .av{width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af);}
+  .snsprev .un{font-size:12px; font-weight:700;}
+  .snsprev .img{height:120px; background:repeating-linear-gradient(45deg,#f3efe6,#f3efe6 10px,#ece6da 10px,#ece6da 20px); display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:12px;}
+  .snsprev .body{padding:9px 11px; font-size:13px; white-space:pre-wrap;}
+  .snsprev .body .tag{color:var(--primary);}
+  .snsprev .meta{padding:0 11px 10px; font-size:11px; color:var(--ink-soft);}
+  .savetime{margin-top:11px; padding-top:10px; border-top:1px dotted var(--line); font-size:12.5px; color:var(--sage); font-weight:600;}
+  .learned{background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 15px; margin:10px 0; font-size:13px;}
+  .learned b{display:block; margin-bottom:6px;}
+  .learned .row2{padding:4px 0; border-top:1px dotted var(--line);}
+  .learned .row2:first-of-type{border-top:none;}
+
+  /* ── 온보딩 ── */
+  .onbo{background:var(--bg); border-radius:16px; width:100%; max-width:440px; padding:26px 26px 22px;}
+  .onbo h3{font-family:var(--display); font-weight:400; font-size:22px; margin:0 0 4px; text-align:center;}
+  .onbo .p{font-size:13px; color:var(--ink-soft); text-align:center; margin:0 0 18px;}
+  .onbo .st{display:flex; gap:11px; padding:11px 0; border-top:1px solid var(--line);}
+  .onbo .st:first-of-type{border-top:none;}
+  .onbo .st .no{flex:0 0 26px; height:26px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+  .onbo .st .tx{font-size:13.5px;}
+  .onbo .st .tx b{display:block;}
+  .onbo button{width:100%; margin-top:18px; padding:12px;}
+
+  /* ── 완료 축하 ── */
+  @keyframes popCheer{0%{transform:translate(-50%,10px) scale(.9); opacity:0;} 15%{transform:translate(-50%,0) scale(1); opacity:1;} 85%{opacity:1;} 100%{transform:translate(-50%,-8px); opacity:0;}}
+  .cheer{position:fixed; left:50%; bottom:40px; transform:translateX(-50%); z-index:70;
+    background:var(--sage); color:#fff; font-weight:600; font-size:15px; padding:13px 22px;
+    border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.2); animation:popCheer 2.6s ease forwards;}
+
+  /* ── 충전(테스트) 모달 ── */
+  .topup-box{background:var(--bg); border-radius:14px; width:100%; max-width:420px; padding:22px 24px;}
+  .topup-box h3{font-family:var(--display); font-weight:400; font-size:20px; margin:0 0 6px;}
+  .topup-box p{font-size:13.5px; color:var(--ink-soft); margin:0 0 8px;}
+  .topup-test{background:var(--sage-soft); border:1px solid var(--sage); border-radius:10px; padding:14px; margin:14px 0;}
+  .topup-soon{background:#F3EFE6; border:1px dashed var(--line); border-radius:10px; padding:14px; color:var(--ink-soft); font-size:13px;}
 </style>
 </head>
 <body>
 
+  <div class="acctbar" id="acctbar">
+    <div class="who"><span>로그인:</span> <b id="acctEmail"></b></div>
+    <div class="credit-wrap">
+      <div class="credit-top">
+        <span>남은 크레딧 <b id="creditNum">0</b></span>
+        <span id="creditWarn" class="warn"></span>
+      </div>
+      <div class="gauge"><div class="fill" id="creditFill" style="width:100%;"></div></div>
+    </div>
+    <div class="acts">
+      <button type="button" class="ghost small" id="topupBtn">충전하기</button>
+      <button type="button" class="ghost small" id="logoutBtn">로그아웃</button>
+    </div>
+  </div>
+
   <h1>가상오피스</h1>
-  <p class="sub">대표님이 업무를 지시하면 AI 직원 5명이 나눠서 처리하고, 팀장이 검수한 뒤 대표님 승인을 받습니다.</p>
+  <p class="sub">대표님이 업무를 지시하면, 고른 담당자들이 서로 대화 없이 각자 일하고, 총괄AI가 모아서 검수한 뒤 대표님 승인을 받습니다.</p>
 
   <div class="tabs">
     <button type="button" class="tabbtn active" data-view="office">라이브오피스</button>
@@ -173,8 +285,19 @@
     <div class="ask">
       <label for="q">직원들에게 시킬 업무</label>
       <textarea id="q" placeholder="예) 반려동물 사료 성분을 사진으로 찍으면 알려주는 앱, 지금 시작해도 될지 시장을 조사해줘"></textarea>
+      <div class="chiprow" id="examples"><span class="lbl">예시:</span></div>
+      <div class="chiprow" id="templatesBar"><span class="lbl">자주 쓰는 업무:</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:8px;">
+        <label style="margin:0;">이번 업무에 쓸 담당자 (원하는 만큼 선택)</label>
+        <button type="button" class="ghost small" id="recommendBtn">🎯 업무에 맞게 추천</button>
+      </div>
+      <div class="agentPicker" id="agentPicker"></div>
+      <div class="hint" id="recNote" style="margin-top:6px; display:none;"></div>
+      <label style="display:flex; align-items:center; gap:6px; margin-top:10px; font-weight:500; font-size:13px; cursor:pointer;">
+        <input type="checkbox" id="quickMode"> ⚡ 빠른 모드 — 아이디어만 빠르게 (총괄 검수 생략, 검수 크레딧 20 절약)
+      </label>
       <div class="row">
-        <span class="hint" id="hint">보통 2~5분 걸립니다. 창을 닫지 마세요.</span>
+        <span class="hint" id="hint">이 업무 예상 차감: <b id="costEst">0</b> 크레딧 · 보통 2~5분 걸립니다.</span>
         <button id="btn">업무 지시하기</button>
       </div>
     </div>
@@ -188,10 +311,10 @@
         </div>
       </div>
       <div class="floor" id="floor">
-        <div class="room" id="room-research"><span class="tag">자료조사팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-verify"><span class="tag">검증팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-lead"><span class="tag">팀장실</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
-        <div class="room" id="room-content"><span class="tag">콘텐츠팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-research"><span class="tag">전략·분석팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-verify"><span class="tag">고객·영업팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-lead"><span class="tag">총괄실</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
+        <div class="room" id="room-content"><span class="tag">콘텐츠·운영팀</span><span class="plant"><span class="leaf"></span><span class="pot"></span></span></div>
       </div>
       <div class="log" id="log">직원들이 자리에서 대기하고 있습니다.</div>
     </div>
@@ -199,13 +322,32 @@
     <div class="crew" id="crew"></div>
 
     <div id="result"></div>
+
+    <div class="ask" id="knowledgeBox">
+      <div class="office-head" style="margin-bottom:6px;">
+        <h2 style="font-size:14px;">담당자별 전문 지식 등록</h2>
+        <button type="button" class="ghost small" id="knowledgeToggle">열기</button>
+      </div>
+      <p class="hint" style="margin:0 0 10px;">담당자가 일할 때마다 참고할 자료(논문 요약, 가이드, 사규 등)를 미리 등록해 둘 수 있습니다. 텍스트만 붙여넣을 수 있습니다.</p>
+      <div id="knowledgePanel" style="display:none;">
+        <label for="kRole">담당자</label>
+        <select id="kRole" style="width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; margin-bottom:8px;"></select>
+        <label for="kTitle">자료 제목</label>
+        <input id="kTitle" type="text" placeholder="예) 우리 업계 시장조사 가이드" style="width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; margin-bottom:8px;">
+        <label for="kText">자료 내용 (붙여넣기)</label>
+        <textarea id="kText" style="min-height:100px;" placeholder="논문 요약, 사업 관련 지식, 지켜야 할 규칙 등을 붙여넣으세요."></textarea>
+        <div class="row"><span class="hint"></span><button type="button" id="kAddBtn" class="small">자료 등록</button></div>
+        <div id="kList" style="margin-top:10px;"></div>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-dashboard">
     <div class="stat-cards">
       <div class="card"><div class="v" id="statCompleted">0</div><div class="l">완료된 업무</div></div>
-      <div class="card"><div class="v" id="statResearch">0</div><div class="l">총 자료조사 건수</div></div>
+      <div class="card"><div class="v" id="statResearch">0</div><div class="l">총 작업 건수</div></div>
       <div class="card"><div class="v" id="statRetry">0</div><div class="l">재조사·재작업 횟수</div></div>
+      <div class="card"><div class="v" id="statSuccess">-</div><div class="l">작업 성공률</div></div>
       <div class="card"><div class="v" id="statStart">-</div><div class="l">최근 업무 시작 시각</div></div>
     </div>
     <table class="dash-table">
@@ -221,6 +363,50 @@
         <button type="button" class="ghost small" id="feedClose">닫기 ✕</button>
       </div>
       <div id="feed-wrap"><div id="out"></div></div>
+    </div>
+  </div>
+
+  <!-- 로그인 / 회원가입 -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <h2>가상오피스</h2>
+      <p class="sub2" id="authSub">이메일로 로그인해 주세요.</p>
+      <label for="authEmail">이메일</label>
+      <input id="authEmail" type="email" autocomplete="username" placeholder="you@example.com">
+      <label for="authPw">비밀번호</label>
+      <input id="authPw" type="password" autocomplete="current-password" placeholder="6자 이상">
+      <div class="auth-err" id="authErr"></div>
+      <button class="mainbtn" id="authBtn">로그인</button>
+      <div class="auth-switch" id="authSwitch">계정이 없으신가요? <a id="authToggle">회원가입</a></div>
+      <div class="auth-note" id="authBonus">지금 가입하면 무료 크레딧 300을 드립니다.</div>
+    </div>
+  </div>
+
+  <!-- 첫 사용 안내(온보딩) -->
+  <div class="modal-overlay" id="onboOverlay">
+    <div class="onbo">
+      <h3>가상오피스에 오신 걸 환영해요 👋</h3>
+      <p class="p">AI 직원팀에게 일을 시키는 방법, 딱 4단계예요.</p>
+      <div class="st"><div class="no">1</div><div class="tx"><b>업무를 적어요</b>무엇이 궁금한지, 무엇을 만들지 한국어로 편하게 적으면 됩니다. (예시 버튼을 눌러도 돼요)</div></div>
+      <div class="st"><div class="no">2</div><div class="tx"><b>담당자를 골라요</b>이 업무에 필요한 직원을 고릅니다. "🎯 추천" 버튼을 누르면 알아서 골라줘요.</div></div>
+      <div class="st"><div class="no">3</div><div class="tx"><b>총괄AI가 검수해요</b>직원들이 각자 일하고, 총괄AI가 믿을 만한지 확인해 보고서로 정리해 줍니다.</div></div>
+      <div class="st"><div class="no">4</div><div class="tx"><b>대표님이 결정해요</b>보고서를 보고 승인하거나 보완을 요청하면 끝. 크레딧은 결과가 나올 때만 차감돼요.</div></div>
+      <button class="go" id="onboClose">시작하기</button>
+    </div>
+  </div>
+
+  <!-- 충전(테스트) -->
+  <div class="modal-overlay" id="topupOverlay">
+    <div class="topup-box">
+      <h3>크레딧 충전</h3>
+      <p>업무를 시킬 때마다 크레딧이 차감됩니다. 부족하면 여기서 충전합니다.</p>
+      <div class="topup-test">
+        <b>테스트 충전</b>
+        <p style="margin:6px 0 10px;">지금은 실제 결제 연결 전이라, 버튼을 누르면 크레딧 300이 바로 채워집니다. (테스트용)</p>
+        <button class="go small" id="topupTestBtn">테스트 충전 +300</button>
+      </div>
+      <div class="topup-soon">💳 실제 결제(카드·계좌)는 준비 중입니다. 사업자등록과 결제대행사 연결이 끝나면 이 자리에 결제창이 들어갑니다.</div>
+      <div class="row" style="margin-top:14px;"><span class="hint"></span><button type="button" class="ghost small" id="topupClose">닫기</button></div>
     </div>
   </div>
 
@@ -246,21 +432,37 @@ function saveCustomName(orig, newName){
   try { localStorage.setItem(NAME_KEY, JSON.stringify(customNames)); } catch(e){}
 }
 
-/* ────────── 직원 정보 (내부 식별용 원래 이름은 그대로 사용, 화면 표시만 바뀜) ────────── */
+/* ────────── 직원 정보 (내부 식별용 원래 이름은 그대로 사용, 화면 표시만 바뀜) ──────────
+   신트라 방식: 역할은 고정, 대표가 이번 업무에 쓸 담당자를 고른다. 담당자끼리는 서로 소통하지 않고
+   전부 총괄AI에게만 보고한다. */
 var CREW = [
-  { name:'조사팀1',   role:'조사 담당',  color:'var(--jaemin)',    desk:{x:9,  y:58}, sprite:'man'   },
-  { name:'조사팀2',   role:'조사 담당',  color:'var(--daeun)',     desk:{x:23, y:58}, sprite:'woman' },
-  { name:'검증팀1',   role:'검증 담당',  color:'var(--seunghyo)',  desk:{x:43, y:58}, sprite:'man'   },
-  { name:'팀장1', role:'팀장',       color:'var(--jihye)',     desk:{x:64, y:58}, sprite:'woman' },
-  { name:'마케팅팀1',   role:'콘텐츠 담당', color:'var(--haneul)',   desk:{x:87, y:58}, sprite:'man'   }
+  // 전략·분석팀
+  { name:'전략기획', role:'전략기획 담당',       color:'#378ADD', desk:{x:6,  y:58}, sprite:'man',   desc:'사업 방향·신규 아이템·성장 전략을 조사하고 제안해요.' },
+  { name:'재무분석', role:'재무분석 담당',       color:'#2B9E8F', desk:{x:15, y:58}, sprite:'woman', desc:'매출·비용·수익성 같은 숫자를 정리하고 분석해요.' },
+  { name:'SEO',      role:'SEO 담당',            color:'#5B8DEF', desk:{x:24, y:58}, sprite:'man',   desc:'검색 노출을 높일 키워드와 콘텐츠 구조를 제안해요.' },
+  // 고객·영업팀
+  { name:'고객문의', role:'고객문의 응대 담당',   color:'#D85A30', desk:{x:34, y:58}, sprite:'woman', desc:'고객 문의에 대한 답변 초안을 써요. (실제 발송 안 함)' },
+  { name:'영업관리', role:'영업관리 담당',       color:'#C2472B', desk:{x:41, y:58}, sprite:'man',   desc:'영업 절차·고객 관리·제안서 구조를 정리해요.' },
+  { name:'채용',     role:'채용 담당',           color:'#A8452E', desk:{x:48, y:58}, sprite:'woman', desc:'채용 공고문과 지원자 검토 기준을 만들어요.' },
+  // 총괄실
+  { name:'총괄AI',   role:'총괄(검수·판단)',      color:'#7F77DD', desk:{x:60, y:58}, sprite:'woman', desc:'모든 담당자 결과를 검수하고 대표님께 보고서를 올려요.' },
+  // 콘텐츠·운영팀 (2줄)
+  { name:'SNS콘텐츠', role:'SNS·블로그 콘텐츠 담당', color:'#C9832E', desk:{x:73, y:38}, sprite:'man',   desc:'SNS·블로그에 올릴 글 초안을 써요. (실제 게시 안 함)' },
+  { name:'카피라이터', role:'카피라이터',            color:'#B96F22', desk:{x:84, y:38}, sprite:'woman', desc:'광고 문구·제품 설명·상세페이지 문구를 써요.' },
+  { name:'이메일',    role:'이메일 담당',           color:'#CC9A3C', desk:{x:95, y:38}, sprite:'man',   desc:'고객·거래처에 보낼 이메일 초안을 써요. (실제 발송 안 함)' },
+  { name:'성장코치',  role:'성장 코치',             color:'#4F7A56', desk:{x:73, y:76}, sprite:'woman', desc:'대표님 업무 습관·목표 관리·우선순위를 도와요.' },
+  { name:'이커머스',  role:'이커머스 운영 담당',     color:'#3F8F5C', desk:{x:84, y:76}, sprite:'man',   desc:'스마트스토어·쿠팡 같은 판매채널 운영을 정리해요.' },
+  { name:'비서',      role:'비서 (이미지 기획)',    color:'#6BA36E', desk:{x:95, y:76}, sprite:'woman', desc:'이미지가 필요한 곳의 기획안(장면·문구·구도)을 글로 써요.' }
 ];
-var HANDOFF = { x:60, y:58 }; // 팀장실 입구 — 결과를 전달하는 지점
+// 대표가 업무마다 고를 수 있는 담당자 (신트라 12헬퍼와 1:1 대응). 총괄AI는 항상 자동 참여.
+var PICKABLE = ['전략기획','고객문의','이커머스','재무분석','이메일','성장코치','영업관리','카피라이터','채용','SEO','SNS콘텐츠','비서'];
+var HANDOFF = { x:60, y:58 }; // 총괄실 입구 — 결과를 전달하는 지점
 
 var els = {};
 var jobId = null, source = null, backTimers = {};
 var feedUnread = 0, feedOpen = false;
 var currentView = 'office';
-var stats = { completedJobs:0, researchSteps:0, retries:0, lastStart:'-' };
+var stats = { completedJobs:0, researchSteps:0, retries:0, errors:0, lastStart:'-' };
 
 /* ────────── 화면 만들기 ────────── */
 function buildOffice(){
@@ -280,10 +482,12 @@ function buildOffice(){
 
     var card = document.createElement('div');
     card.className = 'c';
+    card.title = p.desc || '';
     card.innerHTML = '<div class="r">' + p.role + '</div>'
       + '<div class="n"><span class="nmtext">' + esc(displayName(p.name)) + '</span>'
       + '<button type="button" class="edit" title="이름 바꾸기" data-orig="' + esc(p.name) + '">✎</button></div>'
-      + '<div class="s">대기 중</div>';
+      + '<div class="s">대기 중</div>'
+      + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '');
     crew.appendChild(card);
 
     els[p.name] = {
@@ -308,6 +512,21 @@ function buildOffice(){
   });
 }
 buildOffice();
+
+/* ────────── 업무마다 담당자 고르기 ────────── */
+function buildAgentPicker(){
+  var box = document.getElementById('agentPicker');
+  PICKABLE.forEach(function(key){
+    var p = CREW.filter(function(c){ return c.name === key; })[0];
+    var label = document.createElement('label');
+    label.innerHTML = '<input type="checkbox" value="' + esc(key) + '" checked> ' + esc(displayName(key)) + ' <span style="color:var(--ink-soft);">(' + esc(p.role) + ')</span>';
+    box.appendChild(label);
+  });
+}
+buildAgentPicker();
+function selectedAgents(){
+  return Array.prototype.slice.call(document.querySelectorAll('#agentPicker input:checked')).map(function(i){ return i.value; });
+}
 
 /* ────────── 캐릭터 상태 ────────── */
 function setState(name, state, text, time){
@@ -387,6 +606,8 @@ function renderDashboard(){
   document.getElementById('statCompleted').textContent = stats.completedJobs;
   document.getElementById('statResearch').textContent = stats.researchSteps;
   document.getElementById('statRetry').textContent = stats.retries;
+  var totalJobs = stats.completedJobs + stats.errors;
+  document.getElementById('statSuccess').textContent = totalJobs ? Math.round(stats.completedJobs / totalJobs * 100) + '%' : '-';
   document.getElementById('statStart').textContent = stats.lastStart;
 
   var body = document.getElementById('dashBody');
@@ -477,16 +698,33 @@ function addStep(ev){
     card.scrollIntoView({ behavior:'smooth', block:'nearest' });
     return;
   }
-  if(/^조사 결과/.test(ev.label || '')) stats.researchSteps++;
-  if(/다시 조사|다시 작업/.test(ev.label || '')) stats.retries++;
+  if(ev.kind === 'result' || ev.kind === 'rework'){
+    stats.researchSteps++;
+    window.jobResults = window.jobResults || {};
+    window.jobResults[ev.agent] = ev.text;
+  }
+  if(ev.kind === 'rework') stats.retries++;
   if(ev.isReport){
     // 팀장 검수가 끝난 결론만 메인 화면에 보여준다
     var result = document.getElementById('result');
     result.innerHTML = '';
     var card = document.createElement('div');
     card.className = 'step report';
-    card.innerHTML = stepHTML(ev);
+    var hrs = Math.max(1, Math.round((window.lastAgentCount || 1) * 0.7));
+    card.innerHTML = stepHTML(ev)
+      + '<div class="savetime">⏱ 사람이 직접 알아봤다면 약 ' + hrs + '시간 걸릴 일이었어요 (대략 추정)</div>'
+      + '<div class="feedback"><span class="q">이 결과, 도움이 되셨나요?</span>'
+      + '<button type="button" data-r="up">👍</button>'
+      + '<button type="button" data-r="down">👎</button></div>';
     result.appendChild(card);
+    var fb = card.querySelector('.feedback');
+    fb.querySelectorAll('button').forEach(function(b){
+      b.onclick = function(){
+        fetch('/api/feedback', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ jobId: jobId, rating: b.getAttribute('data-r') }) });
+        fb.innerHTML = '<span class="thanks">소중한 의견 감사합니다 🙏</span>';
+      };
+    });
     result.scrollIntoView({ behavior:'smooth', block:'start' });
     return;
   }
@@ -494,7 +732,7 @@ function addStep(ev){
   var out = document.getElementById('out');
   var div = document.createElement('div');
   div.className = 'step';
-  div.innerHTML = stepHTML(ev);
+  div.innerHTML = stepHTML(ev) + (ev.agent === 'SNS콘텐츠' ? snsPreviewHTML(ev.text) : '');
   out.appendChild(div);
   if(feedOpen) div.scrollIntoView({ behavior:'smooth', block:'nearest' });
   markUnread();
@@ -524,7 +762,7 @@ function showApproval(ev){
   box.className = 'approve';
   box.innerHTML =
     '<h2>대표님 결재가 필요합니다</h2>' +
-    '<p>팀장 ' + dn('팀장1') + '이 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
+    '<p>' + dn('총괄AI') + '가 검수를 마쳤습니다. 위 보고서를 확인하고 결정해 주세요.' +
     (ev.lastRound ? ' (이번이 마지막 보완 기회입니다)' : '') + '</p>' +
     '<textarea placeholder="어떤 점이 부족한지 편하게 적어 주세요. 예) 경쟁사 가격이 빠졌어요"></textarea>' +
     '<div class="btns">' +
@@ -584,6 +822,10 @@ function finish(){
 btn.onclick = function(){
   var q = document.getElementById('q').value.trim();
   if(!q){ document.getElementById('q').focus(); return; }
+  var agents = selectedAgents();
+  if(!agents.length){ addNote('담당자를 최소 1명은 선택해 주세요.', 'err'); return; }
+  window.lastAgentCount = agents.length;
+  window.jobResults = {};
 
   btn.disabled = true;
   btn.textContent = '진행 중…';
@@ -598,12 +840,14 @@ btn.onclick = function(){
   fetch('/api/start', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ question: q })
+    body: JSON.stringify({ question: q, agents: agents, quick: isQuick() })
   })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    if(d.error) throw new Error(d.error);
-    jobId = d.jobId;
+  .then(function(r){ return r.json().then(function(d){ return { status:r.status, d:d }; }); })
+  .then(function(res){
+    if(res.status === 401){ finish(); document.getElementById('authOverlay').classList.add('show'); return; }
+    if(res.status === 402){ finish(); addNote('크레딧이 부족합니다. 충전 후 다시 시도해 주세요.', 'err'); document.getElementById('topupOverlay').classList.add('open'); return; }
+    if(res.d.error) throw new Error(res.d.error);
+    jobId = res.d.jobId;
     listen();
   })
   .catch(function(e){
@@ -637,6 +881,9 @@ function listen(){
       // 이번 회차 결과는 지났으니, 새 결과가 나올 때까지 결과 칸을 비워둔다
       document.getElementById('result').innerHTML = '';
     }
+    else if(ev.type === 'credit'){
+      if(me){ me.credits = ev.credits; renderCredits(me); }
+    }
     else if(ev.type === 'approved'){
       var result = document.getElementById('result');
       var box = result.querySelector('.approve');
@@ -653,11 +900,14 @@ function listen(){
       setLog('업무 종료. 직원들이 자리로 돌아갔습니다.');
       resetCrew();
       stats.completedJobs++;
+      celebrate('🎉 업무 완료! 직원들이 잘 해냈어요.');
+      showLearned();
     }
     else if(ev.type === 'error'){
       addNote(ev.text, 'err');
       setLog('문제가 생겨 업무가 중단됐습니다.');
       resetCrew();
+      stats.errors++;
       finish();
     }
     else if(ev.type === 'done'){
@@ -672,6 +922,303 @@ function listen(){
     if(source && source.readyState === 2) finish();
   };
 }
+
+/* ────────── 담당자별 전문 지식 등록 ────────── */
+var kRole = document.getElementById('kRole');
+var brandOpt = document.createElement('option');
+brandOpt.value = '브랜드가이드';
+brandOpt.textContent = '🏷 브랜드 가이드 (모든 담당자 공통)';
+kRole.appendChild(brandOpt);
+PICKABLE.forEach(function(key){
+  var opt = document.createElement('option');
+  opt.value = key;
+  opt.textContent = displayName(key);
+  kRole.appendChild(opt);
+});
+
+var knowledgeToggle = document.getElementById('knowledgeToggle');
+var knowledgePanel = document.getElementById('knowledgePanel');
+knowledgeToggle.onclick = function(){
+  var opening = knowledgePanel.style.display === 'none';
+  knowledgePanel.style.display = opening ? 'block' : 'none';
+  knowledgeToggle.textContent = opening ? '닫기' : '열기';
+  if(opening) loadKnowledgeList();
+};
+kRole.onchange = loadKnowledgeList;
+
+function loadKnowledgeList(){
+  var kList = document.getElementById('kList');
+  kList.innerHTML = '<div class="hint">불러오는 중…</div>';
+  fetch('/api/knowledge/' + encodeURIComponent(kRole.value))
+    .then(function(r){ return r.json(); })
+    .then(function(d){ renderKnowledgeList(d.items || []); })
+    .catch(function(){ kList.innerHTML = '<div class="hint">불러오지 못했습니다.</div>'; });
+}
+function renderKnowledgeList(items){
+  var kList = document.getElementById('kList');
+  if(!items.length){ kList.innerHTML = '<div class="hint">등록된 자료가 아직 없습니다.</div>'; return; }
+  kList.innerHTML = '';
+  items.forEach(function(it){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;';
+    row.innerHTML = '<span>' + esc(it.title) + ' <span class="hint">(' + esc(it.addedAt || '') + ')</span></span>';
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'ghost small'; del.textContent = '삭제';
+    del.onclick = function(){
+      fetch('/api/knowledge/' + encodeURIComponent(kRole.value) + '/' + encodeURIComponent(it.id), { method:'DELETE' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ renderKnowledgeList(d.items || []); });
+    };
+    row.appendChild(del);
+    kList.appendChild(row);
+  });
+}
+document.getElementById('kAddBtn').onclick = function(){
+  var title = document.getElementById('kTitle').value.trim();
+  var text = document.getElementById('kText').value.trim();
+  if(!text){ document.getElementById('kText').focus(); return; }
+  fetch('/api/knowledge/' + encodeURIComponent(kRole.value), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ title: title, text: text })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.error){ addNote(d.error, 'err'); return; }
+    document.getElementById('kTitle').value = '';
+    document.getElementById('kText').value = '';
+    renderKnowledgeList(d.items || []);
+  })
+  .catch(function(){ addNote('자료 등록에 실패했습니다.', 'err'); });
+};
+
+/* ────────── 로그인 · 크레딧 ────────── */
+var COST = { perAgent:10, manager:20 };
+var me = null;
+var authMode = 'login';
+
+function isQuick(){ var q = document.getElementById('quickMode'); return !!(q && q.checked); }
+function updateCostEst(){
+  var n = selectedAgents().length;
+  var el = document.getElementById('costEst');
+  if(el) el.textContent = (n * COST.perAgent + (isQuick() ? 0 : COST.manager));
+}
+document.getElementById('agentPicker').addEventListener('change', updateCostEst);
+document.getElementById('quickMode').addEventListener('change', updateCostEst);
+
+function renderCredits(user){
+  me = user;
+  document.getElementById('acctEmail').textContent = user.email;
+  document.getElementById('creditNum').textContent = user.credits;
+  var ceiling = user.ceiling || user.credits || 1;
+  var pct = Math.max(0, Math.min(100, Math.round(user.credits / ceiling * 100)));
+  var fill = document.getElementById('creditFill');
+  fill.style.width = pct + '%';
+  fill.className = 'fill' + (pct <= 5 ? ' crit' : (pct <= 20 ? ' low' : ''));
+  var warn = document.getElementById('creditWarn');
+  if(pct <= 5){ warn.textContent = '거의 소진됨 — 충전이 필요해요'; warn.className = 'warn crit'; }
+  else if(pct <= 20){ warn.textContent = '곧 소진돼요'; warn.className = 'warn'; }
+  else { warn.textContent = ''; warn.className = 'warn'; }
+}
+
+function setAuthMode(m){
+  authMode = m;
+  document.getElementById('authSub').textContent = m === 'login' ? '이메일로 로그인해 주세요.' : '이메일과 비밀번호로 가입하세요.';
+  document.getElementById('authBtn').textContent = m === 'login' ? '로그인' : '회원가입';
+  document.getElementById('authSwitch').innerHTML = m === 'login'
+    ? '계정이 없으신가요? <a id="authToggle">회원가입</a>'
+    : '이미 계정이 있으신가요? <a id="authToggle">로그인</a>';
+  document.getElementById('authBonus').style.display = m === 'login' ? 'none' : 'block';
+  document.getElementById('authPw').setAttribute('autocomplete', m === 'login' ? 'current-password' : 'new-password');
+  bindAuthToggle();
+}
+function bindAuthToggle(){
+  document.getElementById('authToggle').onclick = function(){
+    setAuthMode(authMode === 'login' ? 'signup' : 'login');
+    document.getElementById('authErr').style.display = 'none';
+  };
+}
+
+document.getElementById('authBtn').onclick = function(){
+  var email = document.getElementById('authEmail').value.trim();
+  var pw = document.getElementById('authPw').value;
+  var errEl = document.getElementById('authErr');
+  errEl.style.display = 'none';
+  fetch('/api/' + (authMode === 'login' ? 'login' : 'signup'), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email: email, password: pw })
+  })
+  .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, d:d }; }); })
+  .then(function(res){
+    if(!res.ok){ errEl.textContent = res.d.error || '문제가 발생했습니다.'; errEl.style.display = 'block'; return; }
+    document.getElementById('authOverlay').classList.remove('show');
+    document.getElementById('acctbar').classList.add('show');
+    renderCredits(res.d.user);
+    updateCostEst();
+    maybeOnboard();
+  })
+  .catch(function(){ errEl.textContent = '연결에 실패했습니다.'; errEl.style.display = 'block'; });
+};
+
+document.getElementById('logoutBtn').onclick = function(){
+  fetch('/api/logout', { method:'POST' }).then(function(){ location.reload(); });
+};
+
+document.getElementById('topupBtn').onclick = function(){ document.getElementById('topupOverlay').classList.add('open'); };
+document.getElementById('topupClose').onclick = function(){ document.getElementById('topupOverlay').classList.remove('open'); };
+document.getElementById('topupOverlay').addEventListener('click', function(e){ if(e.target === this) this.classList.remove('open'); });
+document.getElementById('topupTestBtn').onclick = function(){
+  fetch('/api/topup', { method:'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if(d.user){ renderCredits(d.user); document.getElementById('topupOverlay').classList.remove('open'); } });
+};
+
+function checkAuth(){
+  fetch('/api/me')
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){
+      COST.perAgent = d.costPerAgent; COST.manager = d.costManager;
+      document.getElementById('authOverlay').classList.remove('show');
+      document.getElementById('acctbar').classList.add('show');
+      renderCredits(d.user);
+      updateCostEst();
+      maybeOnboard();
+    })
+    .catch(function(){ document.getElementById('authOverlay').classList.add('show'); });
+}
+/* ────────── 완료 축하 ────────── */
+function celebrate(msg){
+  var d = document.createElement('div');
+  d.className = 'cheer';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 2600);
+}
+
+/* ────────── 업무 예시 버튼 ────────── */
+var EXAMPLES = [
+  '우리 동네에서 인테리어 소품 가게 창업, 지금 시작해도 될지 조사해줘',
+  '요즘 20~30대에게 인기 있는 인테리어 트렌드를 알려줘',
+  '신제품 출시 인스타그램 게시글 초안을 써줘'
+];
+(function(){
+  var box = document.getElementById('examples');
+  EXAMPLES.forEach(function(t){
+    var c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = t.length > 22 ? t.slice(0, 22) + '…' : t;
+    c.title = t;
+    c.onclick = function(){ var q = document.getElementById('q'); q.value = t; q.focus(); };
+    box.appendChild(c);
+  });
+})();
+
+/* ────────── 자주 쓰는 업무 템플릿 (이 브라우저에 저장) ────────── */
+var TPL_KEY = 'officeTemplates_v1';
+function loadTemplates(){ try { return JSON.parse(localStorage.getItem(TPL_KEY) || '[]') || []; } catch(e){ return []; } }
+function saveTemplates(list){ try { localStorage.setItem(TPL_KEY, JSON.stringify(list)); } catch(e){} }
+function renderTemplates(){
+  var bar = document.getElementById('templatesBar');
+  Array.prototype.slice.call(bar.querySelectorAll('.chip')).forEach(function(n){ n.remove(); });
+  var list = loadTemplates();
+  list.forEach(function(t, i){
+    var c = document.createElement('span');
+    c.className = 'chip';
+    c.innerHTML = esc(t.length > 18 ? t.slice(0, 18) + '…' : t) + '<span class="x" title="삭제">✕</span>';
+    c.title = t;
+    c.onclick = function(e){
+      if(e.target.classList.contains('x')){
+        var l = loadTemplates(); l.splice(i, 1); saveTemplates(l); renderTemplates(); return;
+      }
+      var q = document.getElementById('q'); q.value = t; q.focus();
+    };
+    bar.appendChild(c);
+  });
+  var add = document.createElement('span');
+  add.className = 'chip add';
+  add.textContent = '＋ 지금 내용 저장';
+  add.onclick = function(){
+    var v = document.getElementById('q').value.trim();
+    if(!v){ document.getElementById('q').focus(); return; }
+    var l = loadTemplates();
+    if(l.indexOf(v) === -1){ l.unshift(v); if(l.length > 10) l = l.slice(0, 10); saveTemplates(l); renderTemplates(); }
+  };
+  bar.appendChild(add);
+}
+renderTemplates();
+
+/* ────────── 담당자 조합 추천 (입력한 업무의 단어로 판단, AI 안 씀=무료) ────────── */
+var RECMAP = {
+  전략기획: ['전략','방향','사업','창업','시작','아이템','성장','계획','기획','시장','조사','진출'],
+  재무분석: ['비용','수익','매출','가격','예산','돈','손익','재무','정산','마진','원가'],
+  SEO: ['검색','노출','키워드','상위','구글','네이버','seo','유입'],
+  고객문의: ['고객','문의','응대','컴플레인','불만','cs','상담','faq','질문'],
+  영업관리: ['영업','제안서','계약','거래처','세일즈','납품','수주'],
+  채용: ['채용','직원','구인','면접','공고','알바','인력','뽑'],
+  SNS콘텐츠: ['인스타','블로그','sns','게시글','피드','릴스','포스팅','콘텐츠','글','유튜브'],
+  카피라이터: ['문구','카피','슬로건','상세페이지','광고문','헤드라인','제목','문안'],
+  이메일: ['이메일','메일','뉴스레터','안내문','회신','답장'],
+  성장코치: ['습관','목표','우선순위','동기','루틴','생산성','관리'],
+  이커머스: ['스마트스토어','쿠팡','온라인 판매','판매채널','상품 등록','배송','재고','오픈마켓'],
+  비서: ['이미지','사진','썸네일','그림','디자인','비주얼','포스터','로고']
+};
+document.getElementById('recommendBtn').onclick = function(){
+  var q = document.getElementById('q').value.trim().toLowerCase();
+  var note = document.getElementById('recNote');
+  if(!q){ document.getElementById('q').focus(); note.style.display='block'; note.textContent='먼저 위에 업무를 적어 주세요.'; return; }
+  var picked = PICKABLE.filter(function(k){
+    return (RECMAP[k]||[]).some(function(w){ return q.indexOf(String(w).toLowerCase()) >= 0; });
+  });
+  if(!picked.length) picked = ['전략기획','SNS콘텐츠'];
+  document.querySelectorAll('#agentPicker input').forEach(function(i){ i.checked = picked.indexOf(i.value) >= 0; });
+  updateCostEst();
+  note.style.display = 'block';
+  note.innerHTML = '추천: <b>' + picked.map(function(k){ return esc(displayName(k)); }).join(', ') + '</b> — 이 업무엔 이 담당자들이 잘 맞아요. 더 고르거나 빼셔도 됩니다.';
+};
+
+/* ────────── SNS 미리보기 (글자수·해시태그) ────────── */
+function snsPreviewHTML(text){
+  var t = String(text || '');
+  var total = t.length;
+  var tags = (t.match(/#[^\s#]+/g) || []).length;
+  var body = esc(t).replace(/(#[^\s#]+)/g, '<span class="tag">$1</span>');
+  return '<div class="snsprev"><div class="bar"><span class="av"></span><span class="un">'
+    + esc(displayName('SNS콘텐츠')) + '</span></div>'
+    + '<div class="img">사진 자리 (대표님이 넣기)</div>'
+    + '<div class="body">' + body + '</div>'
+    + '<div class="meta">글자수 ' + total + '자 · 해시태그 ' + tags + '개 · 인스타 권장 2,200자 이내</div></div>';
+}
+
+/* ────────── 담당자들이 한 일 요약 ────────── */
+function showLearned(){
+  var lr = window.jobResults || {};
+  var keys = Object.keys(lr);
+  if(!keys.length) return;
+  var html = '<b>🧠 오늘 담당자들이 한 일</b>';
+  keys.forEach(function(k){
+    var first = String(lr[k]).replace(/^#+\s*/, '').split('\n').filter(function(s){ return s.trim(); })[0] || '';
+    if(first.length > 60) first = first.slice(0, 60) + '…';
+    html += '<div class="row2"><b style="display:inline;">' + dn(k) + '</b> — ' + esc(first) + '</div>';
+  });
+  var card = document.createElement('div');
+  card.className = 'learned';
+  card.innerHTML = html;
+  document.getElementById('result').appendChild(card);
+}
+
+/* ────────── 첫 사용 안내(온보딩) — 한 번만 ────────── */
+var ONBO_KEY = 'onboarded_v1';
+function maybeOnboard(){
+  var seen = false;
+  try { seen = localStorage.getItem(ONBO_KEY) === '1'; } catch(e){}
+  if(!seen) document.getElementById('onboOverlay').classList.add('open');
+}
+document.getElementById('onboClose').onclick = function(){
+  try { localStorage.setItem(ONBO_KEY, '1'); } catch(e){}
+  document.getElementById('onboOverlay').classList.remove('open');
+};
+
+setAuthMode('login');
+checkAuth();
 </script>
 </body>
 </html>
